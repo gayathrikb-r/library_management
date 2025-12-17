@@ -7,6 +7,7 @@ class Book < ApplicationRecord
   has_many :borrowers, through: :borrowings, source: :user
   has_many :reservations, dependent: :destroy
   has_many :reviews, as: :reviewable, dependent: :destroy
+  has_and_belongs_to_many :tags
 
   #Validations
   validates :title, presence: true
@@ -35,7 +36,7 @@ class Book < ApplicationRecord
     return if available_copies>=total_copies
     increment!(:available_copies)
   end
-  def update_average_ratings!
+  def update_average_rating!
     approved_reviews = reviews.where(status: "approved")
     update!(
       average_rating: approved_reviews.average(:rating),

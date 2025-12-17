@@ -11,11 +11,12 @@ class Borrowing < ApplicationRecord
   validate :due_date_after_borrowed_date
   #CALLBACKS
   before_validation :set_dates, on: :create
-  before_save :check_if_overdue, if: :active?
+  before_validation :check_if_overdue
   after_create :decrease_book_availability
   after_update :increase_book_availability, if: :returned_now?
   after_update :notify_next_reservation, if: :returned_now?
 
+  scope :active, -> { where(status: 'active') }
   scope :for_user, -> (user){ where(user: user) }
   scope :for_book, -> (book){ where(book: book)}
   scope :due_soon, -> { active.where('due_date <= ?', 3.days.from_now) }
@@ -73,6 +74,8 @@ class Borrowing < ApplicationRecord
     Rails.logger.error("Failed to fulfill reservation #{next_reservation&.id}: #{e.message}")
   end
   def check_if_overdue
-    self.status='overdue' if Date.today>due_date
+    return unless status == 'active'
+    return if due_date.blank?
+    self.status = 'overdue' if Date.today > due_date
   end
 end

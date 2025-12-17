@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_15_084731) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_17_060947) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -58,6 +58,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_15_084731) do
     t.index ["title"], name: "index_books_on_title"
   end
 
+  create_table "books_tags", id: false, force: :cascade do |t|
+    t.bigint "book_id", null: false
+    t.bigint "tag_id", null: false
+    t.index ["book_id", "tag_id"], name: "index_books_tags_on_book_id_and_tag_id", unique: true
+    t.index ["book_id"], name: "index_books_tags_on_book_id"
+    t.index ["tag_id"], name: "index_books_tags_on_tag_id"
+  end
+
   create_table "borrowings", force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "book_id", null: false
@@ -87,6 +95,8 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_15_084731) do
     t.text "liked_genres"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "favorite_author_id"
+    t.index ["favorite_author_id"], name: "index_profiles_on_favorite_author_id"
     t.index ["user_id"], name: "index_profiles_on_user_id", unique: true
   end
 
@@ -119,6 +129,12 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_15_084731) do
     t.index ["user_id"], name: "index_reviews_on_user_id"
   end
 
+  create_table "tags", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "name", null: false
     t.string "email", null: false
@@ -136,8 +152,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_15_084731) do
   add_foreign_key "book_authors", "books"
   add_foreign_key "book_categories", "books"
   add_foreign_key "book_categories", "categories"
+  add_foreign_key "books_tags", "books"
+  add_foreign_key "books_tags", "tags"
   add_foreign_key "borrowings", "books"
   add_foreign_key "borrowings", "users"
+  add_foreign_key "profiles", "authors", column: "favorite_author_id"
   add_foreign_key "profiles", "users"
   add_foreign_key "reservations", "books"
   add_foreign_key "reservations", "users"
