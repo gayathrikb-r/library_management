@@ -17,6 +17,8 @@ class Borrowing < ApplicationRecord
   after_update :notify_next_reservation, if: :returned_now?
 
   scope :active, -> { where(status: 'active') }
+  scope :overdue,  -> { where(status: 'overdue') }
+  scope :returned, -> { where(status: 'returned') }
   scope :for_user, -> (user){ where(user: user) }
   scope :for_book, -> (book){ where(book: book)}
   scope :due_soon, -> { active.where('due_date <= ?', 3.days.from_now) }
