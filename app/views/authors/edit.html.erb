@@ -1,2 +1,34 @@
-<h1>Authors#edit</h1>
-<p>Find me in app/views/authors/edit.html.erb</p>
+<div class="card">
+  <h1>Edit Author</h1>
+  
+  <%= form_with model: @author do |f| %>
+    <% if @author.errors.any? %>
+      <div class="flash alert">
+        <h3><%= pluralize(@author.errors.count, "error") %>:</h3>
+        <ul>
+          <% @author.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    
+    <div class="form-group">
+      <%= f.label :name %>
+      <%= f.text_field :name, required: true %>
+    </div>
+    
+    <div class="form-group">
+      <%= f.label :birth_date %>
+      <%= f.date_field :birth_date %>
+    </div>
+    
+    <div class="form-group">
+      <%= f.label :biography %>
+      <%= f.text_area :biography %>
+    </div>
+    
+    <%= f.submit "Update Author", class: "btn" %>
+    <%= link_to "Cancel", @author, class: "btn btn-secondary" %>
+  <% end %>
+</div>

@@ -1,2 +1,54 @@
-<h1>Books#index</h1>
-<p>Find me in app/views/books/index.html.erb</p>
+<h1>📚 Book Catalog</h1>
+
+<div class="card">
+  <%= form_with url: books_path, method: :get do |f| %>
+    <div style="display: flex; gap: 10px;">
+      <%= f.text_field :search, placeholder: "Search books by title or ISBN...", 
+          value: params[:search], style: "flex: 1;" %>
+      
+      <%= f.select :category_id, 
+          options_from_collection_for_select(Category.all, :id, :name, params[:category_id]),
+          { include_blank: "All Categories" } %>
+      
+      <%= f.select :available, 
+          options_for_select([["All Books", ""], ["Available Only", "true"]], params[:available]) %>
+      
+      <%= f.submit "Search", class: "btn" %>
+      <%= link_to "Clear", books_path, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>
+
+
+  <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success" %>
+
+
+<div class="grid">
+  <% @books.each do |book| %>
+    <div class="card">
+      <h3><%= link_to book.title, book %></h3>
+      <p><strong>Authors:</strong> <%= book.authors.map(&:name).join(", ") %></p>
+      <p><strong>ISBN:</strong> <%= book.isbn || "N/A" %></p>
+      <p>
+        <% if book.available? %>
+          <span class="badge badge-success">Available (<%= book.available_copies %>)</span>
+        <% else %>
+          <span class="badge badge-danger">Unavailable</span>
+        <% end %>
+      </p>
+      <% if book.average_rating %>
+        <p class="star-rating">
+          <%= "⭐" * book.average_rating.round %>
+          (<%= book.average_rating.round(1) %>/5)
+        </p>
+      <% end %>
+      <%= link_to "View Details", book, class: "btn" %>
+    </div>
+  <% end %>
+</div>
+
+<% if @books.empty? %>
+  <div class="card">
+    <p>No books found. Try adjusting your search criteria.</p>
+  </div>
+<% end %>

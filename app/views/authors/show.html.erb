@@ -1,2 +1,91 @@
-<h1>Authors#show</h1>
-<p>Find me in app/views/authors/show.html.erb</p>
+<div class="card">
+  <h1><%= @author.name %></h1>
+  
+  <% if @author.birth_date %>
+    <p><strong>Born:</strong> <%= @author.birth_date.strftime("%B %d, %Y") %></p>
+  <% end %>
+  
+  <h3>Biography</h3>
+  <p><%= @author.biography || "No biography available." %></p>
+  
+  <% if librarian? %>
+    <div style="margin-top: 20px;">
+      <%= link_to "Edit", edit_author_path(@author), class: "btn" %>
+      <%= link_to "Delete", @author, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, 
+          class: "btn btn-danger" %>
+    </div>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>Books by <%= @author.name %> (<%= @books.count %>)</h2>
+  
+  <% if @books.any? %>
+    <div class="grid">
+      <% @books.each do |book| %>
+        <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <h4><%= link_to book.title, book %></h4>
+          <p><%= book.publication_year %></p>
+          <% if book.average_rating %>
+            <p class="star-rating">
+              <%= "⭐" * book.average_rating.round %> 
+              (<%= book.average_rating.round(1) %>)
+            </p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p>No books found for this author.</p>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>Reviews for <%= @author.name %></h2>
+  
+  <% if logged_in? && !current_user.reviews.exists?(reviewable: @author) %>
+    <h3>Write a Review</h3>
+    <%= form_with model: [@author, @review] do |f| %>
+      <div class="form-group">
+        <%= f.label :rating, "Rating (1-5 stars)" %>
+        <%= f.select :rating, (1..5).to_a.reverse, {}, { required: true } %>
+      </div>
+      
+      <div class="form-group">
+        <%= f.label :comment, "Your Review" %>
+        <%= f.text_area :comment, required: true %>
+      </div>
+      
+      <%= f.submit "Submit Review", class: "btn" %>
+    <% end %>
+  <% end %>
+  
+  <% if @reviews.any? %>
+    <% @reviews.each do |review| %>
+      <div style="margin-top: 20px; padding: 15px; background: #f9f9f9; border-radius: 4px;">
+        <p><strong><%= review.user.name %></strong> 
+          <span class="star-rating"><%= "⭐" * review.rating %></span>
+        </p>
+        <p><%= review.comment %></p>
+        <p style="font-size: 0.85em; color: #666;">
+          <%= review.created_at.strftime("%B %d, %Y") %>
+        </p>
+        
+        <% if librarian? && review.status == 'pending' %>
+          <%= link_to "Approve", approve_review_path(review), 
+              data: { turbo_method: :patch }, class: "btn btn-success" %>
+          <%= link_to "Flag", flag_review_path(review), 
+              data: { turbo_method: :patch }, class: "btn btn-danger" %>
+        <% end %>
+        
+        <% if current_user == review.user %>
+          <%= link_to "Delete", author_review_path(@author, review), 
+              data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, 
+              class: "btn btn-danger" %>
+        <% end %>
+      </div>
+    <% end %>
+  <% else %>
+    <p style="margin-top: 20px;">No reviews yet.</p>
+  <% end %>
+</div>

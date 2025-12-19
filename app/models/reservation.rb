@@ -18,7 +18,7 @@ class Reservation < ApplicationRecord
 
   private
   def set_reservation_date
-    self.set_reservation_date ||=Date.today
+    self.reservation_date ||=Date.today
   end
   def book_is_unavailable
     if book&.available?
