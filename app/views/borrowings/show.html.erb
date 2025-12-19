@@ -1,2 +1,25 @@
-<h1>Borrowings#show</h1>
-<p>Find me in app/views/borrowings/show.html.erb</p>
+<div class="card">
+  <h1>Borrowing Details</h1>
+  
+  <p><strong>User:</strong> <%= link_to @borrowing.user.name, @borrowing.user %></p>
+  <p><strong>Book:</strong> <%= link_to @borrowing.book.title, @borrowing.book %></p>
+  <p><strong>Borrowed Date:</strong> <%= @borrowing.borrowed_date.strftime("%B %d, %Y") %></p>
+  <p><strong>Due Date:</strong> <%= @borrowing.due_date.strftime("%B %d, %Y") %></p>
+  <p><strong>Return Date:</strong> <%= @borrowing.returned_date&.strftime("%B %d, %Y") || "Not returned yet" %></p>
+  <p><strong>Status:</strong> 
+    <% if @borrowing.status == 'returned' %>
+      <span class="badge badge-success">Returned</span>
+    <% elsif @borrowing.status == 'overdue' %>
+      <span class="badge badge-danger">Overdue by <%= @borrowing.days_overdue %> days</span>
+    <% else %>
+      <span class="badge badge-info">Active</span>
+    <% end %>
+  </p>
+  
+  <% if @borrowing.status != 'returned' %>
+    <%= link_to "Return Book", return_book_borrowing_path(@borrowing), 
+        data: { turbo_method: :patch }, class: "btn btn-success" %>
+  <% end %>
+  
+  <%= link_to "Back", borrowings_path, class: "btn btn-secondary" %>
+</div>

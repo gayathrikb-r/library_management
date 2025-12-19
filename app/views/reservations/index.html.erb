@@ -1,2 +1,53 @@
-<h1>Reservations#index</h1>
-<p>Find me in app/views/reservations/index.html.erb</p>
+<h1>🔖 Reservations</h1>
+
+<div class="card">
+  <% if @reservations.any? %>
+    <table>
+      <thead>
+        <tr>
+          <% if librarian? %>
+            <th>User</th>
+          <% end %>
+          <th>Book</th>
+          <th>Reserved Date</th>
+          <th>Status</th>
+          <th>Notified At</th>
+          <th>Expires At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @reservations.each do |reservation| %>
+          <tr>
+            <% if librarian? %>
+              <td><%= link_to reservation.user.name, reservation.user %></td>
+            <% end %>
+            <td><%= link_to reservation.book.title, reservation.book %></td>
+            <td><%= reservation.reservation_date.strftime("%b %d, %Y") %></td>
+            <td>
+              <% case reservation.status %>
+              <% when 'pending' %>
+                <span class="badge badge-warning">Pending</span>
+              <% when 'fulfilled' %>
+                <span class="badge badge-success">Fulfilled</span>
+              <% when 'cancelled' %>
+                <span class="badge badge-danger">Cancelled</span>
+              <% end %>
+            </td>
+            <td><%= reservation.notified_at&.strftime("%b %d, %Y %H:%M") || "-" %></td>
+            <td><%= reservation.expires_at&.strftime("%b %d, %Y %H:%M") || "-" %></td>
+            <td>
+              <% if reservation.status == 'pending' %>
+                <%= link_to "Cancel", cancel_reservation_path(reservation), 
+                    data: { turbo_method: :patch }, class: "btn btn-danger" %>
+              <% end %>
+              <%= link_to "Details", reservation, class: "btn btn-secondary" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No reservations found.</p>
+  <% end %>
+</div>

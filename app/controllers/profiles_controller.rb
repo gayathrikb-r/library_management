@@ -1,6 +1,6 @@
 class ProfilesController < ApplicationController
   before_action :set_user
-  before_action :require_correct_user
+  # before_action :require_correct_user
 
   def show
     @profile = @user.profile
@@ -28,10 +28,10 @@ class ProfilesController < ApplicationController
     @user = User.find(params[:user_id])
   end
   def require_correct_user
-    unless current_user == @user
-      flash[:alert] = "Not authorized"
-      redirect_to root_path
-    end
+    # unless current_user == @user
+    #   flash[:alert] = "Not authorized"
+    #   redirect_to root_path
+    # end
   end
   
   def profile_params

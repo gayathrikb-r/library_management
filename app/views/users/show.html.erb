@@ -1,2 +1,22 @@
-<h1>Users#show</h1>
-<p>Find me in app/views/users/show.html.erb</p>
+<div class="card">
+  <h1><%= @user.name %></h1>
+  
+  <p><strong>Email:</strong> <%= @user.email %></p>
+  <p><strong>Phone:</strong> <%= @user.phone || "Not provided" %></p>
+  <p><strong>Role:</strong> <%= @user.role.capitalize %></p>
+  <p><strong>Member since:</strong> <%= @user.membership_date&.strftime("%B %d, %Y") %></p>
+  
+  <% if current_user == @user %>
+    <%= link_to "Edit Profile", edit_user_path(@user), class: "btn" %>
+    <%= link_to "View Full Profile", user_profile_path(@user), class: "btn btn-secondary" %>
+  <% end %>
+</div>
+
+<% if current_user == @user %>
+  <div class="card">
+    <h2>My Statistics</h2>
+    <p><strong>Active Borrowings:</strong> <%= @user.active_borrowings_count %></p>
+    <p><strong>Total Borrowings:</strong> <%= @user.borrowings.count %></p>
+    <p><strong>Reviews Written:</strong> <%= @user.reviews.count %></p>
+  </div>
+<% end %>

@@ -1,7 +1,7 @@
 class CategoriesController < ApplicationController
-  skip_before_action :require_login, only: [:index, :show]
+  # skip_before_action :require_login, only: [:index, :show]
   before_action :set_category, only: [:show, :edit, :update, :destroy]
-  before_action :require_librarian, only: [:new, :create, :edit, :update, :destroy]
+  # before_action :require_librarian, only: [:new, :create, :edit, :update, :destroy]
   
   def index
     @categories=Category.all.order(:name)

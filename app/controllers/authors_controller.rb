@@ -1,7 +1,7 @@
 class AuthorsController < ApplicationController
-  skip_before_action :require_login, only: [:index, :show]
+  # skip_before_action :require_login, only: [:index, :show]
   before_action :set_author, only: [:show,:edit, :update, :destroy]
-  before_action :require_librarian, only: [:new,:create,:edit,:update,:destroy]
+  # before_action :require_librarian, only: [:new,:create,:edit,:update,:destroy]
 
   def index
     @authors=Author.all.order(:name)

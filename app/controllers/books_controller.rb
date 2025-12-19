@@ -1,7 +1,7 @@
 class BooksController < ApplicationController
-  skip_before_action :require_login, only: [:index, :show]
+  # skip_before_action :require_login, only: [:index, :show]
   before_action :set_book, only: [:show,:edit,:update, :destroy,:borrow,:reserve]
-  before_action :require_librarian, only: [:new,:create,:edit,:update, :destroy]
+  # before_action :require_librarian, only: [:new,:create,:edit,:update, :destroy]
   
   def index
     @books=Book.includes(:authors,:categories).all
@@ -63,20 +63,24 @@ class BooksController < ApplicationController
   end 
 
   def borrow
-    borrowing=current_user.borrowings.build(book: @book)
+    borrowing = User.first.borrowings.build(book: @book)
+    # borrowing=current_user.borrowings.build(book: @book)
     if borrowing.save
       flash[:notice]="Book borrowed successfully! Due date: #{borrowing.due_date}"
-      redirect_to user_dashboard_path(current_user)
+      # redirect_to user_dashboard_path(current_user)
+        redirect_to user_dashboard_path(User.first)
     else
       flash[:alert]=borrowing.errors.full_messages.join(", ")
       redirect_to @book
     end
   end
   def reserve
-    reservation = current_user.reservations.build(book: @book)
+    reservation = User.first.reservations.build(book: @book)
+    # reservation = current_user.reservations.build(book: @book)
     if reservation.save
       flash[:notice] = "Book reserved successfully! We'll notify you when it's available."
-      redirect_to user_dashboard_path(current_user)
+      redirect_to user_dashboard_path(User.first)
+      # redirect_to user_dashboard_path(current_user)
     else
       flash[:alert] = reservation.errors.full_messages.join(", ")
       redirect_to @book

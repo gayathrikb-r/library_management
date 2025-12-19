@@ -1,11 +1,12 @@
 class ReservationsController < ApplicationController
   before_action :set_reservation, only: [:show,:cancel]
   def index
-    if librarian?
-      @reservations=Reservation.includes(:user,:book).order(created_at: :desc)
-       else
-      @reservations = current_user.reservations.includes(:book).order(created_at: :desc)
-    end
+    @reservations = Reservation.includes(:user, :book).order(created_at: :desc)
+    # if librarian?
+    #   @reservations=Reservation.includes(:user,:book).order(created_at: :desc)
+    #    else
+    #   @reservations = current_user.reservations.includes(:book).order(created_at: :desc)
+    # end
   end
 
   def show
@@ -22,9 +23,9 @@ class ReservationsController < ApplicationController
   private
   def set_reservation
     @reservation=Reservation.find(params[:id])
-    unless librarian? || current_user==@reservation.user
-      flash[:alert] = "Not authorized"
-      redirect_to root_path
-    end
+    # unless librarian? || current_user==@reservation.user
+    #   flash[:alert] = "Not authorized"
+    #   redirect_to root_path
+    # end
   end
 end

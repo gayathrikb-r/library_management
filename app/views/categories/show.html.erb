@@ -1,2 +1,31 @@
-<h1>Categories#show</h1>
-<p>Find me in app/views/categories/show.html.erb</p>
+<div class="card">
+  <h1><%= @category.name %></h1>
+  
+  <% if librarian? %>
+    <%= link_to "Edit", edit_category_path(@category), class: "btn" %>
+    <%= link_to "Delete", @category, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, 
+        class: "btn btn-danger" %>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>Books in <%= @category.name %> (<%= @books.count %>)</h2>
+  
+  <% if @books.any? %>
+    <div class="grid">
+      <% @books.each do |book| %>
+        <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+          <h4><%= link_to book.title, book %></h4>
+          <p><%= book.authors.map(&:name).join(", ") %></p>
+          <% if book.available? %>
+            <span class="badge badge-success">Available</span>
+          <% else %>
+            <span class="badge badge-danger">Unavailable</span>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <p>No books in this category yet.</p>
+  <% end %>
+</div>

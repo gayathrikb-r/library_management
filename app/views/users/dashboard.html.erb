@@ -1,2 +1,94 @@
-<h1>Users#dashboard</h1>
-<p>Find me in app/views/users/dashboard.html.erb</p>
+<h1>Welcome, <%= @user.name %>! 📚</h1>
+
+<div class="card">
+  <h2>Active Borrowings</h2>
+  
+  <% if @active_borrowings.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Book</th>
+          <th>Borrowed Date</th>
+          <th>Due Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @active_borrowings.each do |borrowing| %>
+          <tr>
+            <td><%= link_to borrowing.book.title, borrowing.book %></td>
+            <td><%= borrowing.borrowed_date.strftime("%b %d, %Y") %></td>
+            <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
+            <td>
+              <% if borrowing.overdue? %>
+                <span class="badge badge-danger">Overdue by <%= borrowing.days_overdue %> days</span>
+              <% else %>
+                <span class="badge badge-success">Active</span>
+              <% end %>
+            </td>
+            <td>
+              <%= link_to "Return", return_book_borrowing_path(borrowing), 
+                  data: { turbo_method: :patch }, class: "btn btn-success" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No active borrowings. <%= link_to "Browse books", books_path %> to borrow some!</p>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>My Reservations</h2>
+  
+  <% if @reservations.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Book</th>
+          <th>Reserved Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @reservations.each do |reservation| %>
+          <tr>
+            <td><%= link_to reservation.book.title, reservation.book %></td>
+            <td><%= reservation.reservation_date.strftime("%b %d, %Y") %></td>
+            <td><span class="badge badge-info"><%= reservation.status.capitalize %></span></td>
+            <td>
+              <%= link_to "Cancel", cancel_reservation_path(reservation), 
+                  data: { turbo_method: :patch }, class: "btn btn-danger" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No active reservations.</p>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>My Recent Reviews</h2>
+  
+  <% if @recent_reviews.any? %>
+    <% @recent_reviews.each do |review| %>
+      <div style="margin-bottom: 15px; padding: 10px; border-left: 3px solid #007bff;">
+        <p><strong><%= link_to review.reviewable.try(:title) || review.reviewable.name, review.reviewable %></strong></p>
+        <p class="star-rating"><%= "⭐" * review.rating %> (<%= review.rating %>/5)</p>
+        <p><%= review.comment %></p>
+        <p style="font-size: 0.9em; color: #666;">
+          Status: <span class="badge badge-<%= review.status == 'approved' ? 'success' : 'warning' %>">
+            <%= review.status.capitalize %>
+          </span>
+        </p>
+      </div>
+    <% end %>
+  <% else %>
+    <p>You haven't written any reviews yet.</p>
+  <% end %>
+</div>

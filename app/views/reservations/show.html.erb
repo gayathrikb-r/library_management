@@ -1,2 +1,32 @@
-<h1>Reservations#show</h1>
-<p>Find me in app/views/reservations/show.html.erb</p>
+<div class="card">
+  <h1>Reservation Details</h1>
+  
+  <p><strong>User:</strong> <%= link_to @reservation.user.name, @reservation.user %></p>
+  <p><strong>Book:</strong> <%= link_to @reservation.book.title, @reservation.book %></p>
+  <p><strong>Reserved Date:</strong> <%= @reservation.reservation_date.strftime("%B %d, %Y") %></p>
+  <p><strong>Status:</strong> 
+    <% case @reservation.status %>
+    <% when 'pending' %>
+      <span class="badge badge-warning">Pending</span>
+    <% when 'fulfilled' %>
+      <span class="badge badge-success">Fulfilled</span>
+    <% when 'cancelled' %>
+      <span class="badge badge-danger">Cancelled</span>
+    <% end %>
+  </p>
+  
+  <% if @reservation.notified_at %>
+    <p><strong>Notified At:</strong> <%= @reservation.notified_at.strftime("%B %d, %Y at %H:%M") %></p>
+  <% end %>
+  
+  <% if @reservation.expires_at %>
+    <p><strong>Expires At:</strong> <%= @reservation.expires_at.strftime("%B %d, %Y at %H:%M") %></p>
+  <% end %>
+  
+  <% if @reservation.status == 'pending' %>
+    <%= link_to "Cancel Reservation", cancel_reservation_path(@reservation), 
+        data: { turbo_method: :patch }, class: "btn btn-danger" %>
+  <% end %>
+  
+  <%= link_to "Back", reservations_path, class: "btn btn-secondary" %>
+</div>

@@ -65,7 +65,7 @@ Rails.application.routes.draw do
   #Current user profile
   resource :profile, only: [:show, :edit, :update]
   #Public resources
-  resources :users, only: [:show, :index] do
+  resources :users do
     member {get :dashboard}
   end
   resources :books do

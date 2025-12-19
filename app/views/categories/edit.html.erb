@@ -1,2 +1,24 @@
-<h1>Categories#edit</h1>
-<p>Find me in app/views/categories/edit.html.erb</p>
+<div class="card">
+  <h1>Edit Category</h1>
+  
+  <%= form_with model: @category do |f| %>
+    <% if @category.errors.any? %>
+      <div class="flash alert">
+        <h3><%= pluralize(@category.errors.count, "error") %>:</h3>
+        <ul>
+          <% @category.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
+    
+    <div class="form-group">
+      <%= f.label :name %>
+      <%= f.text_field :name, required: true %>
+    </div>
+    
+    <%= f.submit "Update Category", class: "btn" %>
+    <%= link_to "Cancel", categories_path, class: "btn btn-secondary" %>
+  <% end %>
+</div>

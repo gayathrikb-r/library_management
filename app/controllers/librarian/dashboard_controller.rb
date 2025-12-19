@@ -1,5 +1,5 @@
 class Librarian::DashboardController < ApplicationController
-  before_action :require_librarian
+  # before_action :require_librarian
   def index
     @total_books=Book.count 
     @total_users = User.count

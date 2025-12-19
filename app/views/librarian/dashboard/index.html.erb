@@ -1,2 +1,97 @@
-<h1>Librarian::Dashboard#index</h1>
-<p>Find me in app/views/librarian/dashboard/index.html.erb</p>
+<h1>📊 Librarian Dashboard</h1>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+  <div class="card">
+    <h3>Total Books</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #007bff;"><%= @total_books %></p>
+  </div>
+  
+  <div class="card">
+    <h3>Total Users</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #28a745;"><%= @total_users %></p>
+  </div>
+  
+  <div class="card">
+    <h3>Active Borrowings</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #17a2b8;"><%= @active_borrowings %></p>
+  </div>
+  
+  <div class="card">
+    <h3>Overdue Books</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #dc3545;"><%= @overdue_borrowings %></p>
+  </div>
+  
+  <div class="card">
+    <h3>Pending Reservations</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #ffc107;"><%= @pending_reservations %></p>
+  </div>
+  
+  <div class="card">
+    <h3>Pending Reviews</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #6c757d;"><%= @pending_reviews %></p>
+  </div>
+</div>
+
+<div class="card">
+  <h2>⚠️ Overdue Books</h2>
+  
+  <% if @overdue_books.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Book</th>
+          <th>Due Date</th>
+          <th>Days Overdue</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @overdue_books.each do |borrowing| %>
+          <tr>
+            <td><%= link_to borrowing.user.name, borrowing.user %></td>
+            <td><%= link_to borrowing.book.title, borrowing.book %></td>
+            <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
+            <td><span class="badge badge-danger"><%= borrowing.days_overdue %> days</span></td>
+            <td><%= link_to "View", borrowing, class: "btn" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No overdue books! 🎉</p>
+  <% end %>
+</div>
+
+<div class="card">
+  <h2>📚 Recent Borrowings</h2>
+  
+  <table>
+    <thead>
+      <tr>
+        <th>User</th>
+        <th>Book</th>
+        <th>Date</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @recent_borrowings.each do |borrowing| %>
+        <tr>
+          <td><%= link_to borrowing.user.name, borrowing.user %></td>
+          <td><%= link_to borrowing.book.title, borrowing.book %></td>
+          <td><%= borrowing.borrowed_date.strftime("%b %d, %Y") %></td>
+          <td>
+            <% if borrowing.status == 'active' %>
+              <span class="badge badge-info">Active</span>
+            <% elsif borrowing.status == 'overdue' %>
+              <span class="badge badge-danger">Overdue</span>
+            <% else %>
+              <span class="badge badge-success">Returned</span>
+            <% end %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>
