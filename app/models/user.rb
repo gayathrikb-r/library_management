@@ -36,7 +36,7 @@ class User < ApplicationRecord
   end
 
   def send_welcome_email
-    puts "Welcome email sent to #{email}" # Replace with actual email later
+    puts "Welcome email sent to #{email}" # Need to later Replace with actual email later
   end
 
   def check_active_borrowings

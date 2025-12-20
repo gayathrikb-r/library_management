@@ -15,14 +15,6 @@
     <% end %>
   </p>
   
-  <% if @reservation.notified_at %>
-    <p><strong>Notified At:</strong> <%= @reservation.notified_at.strftime("%B %d, %Y at %H:%M") %></p>
-  <% end %>
-  
-  <% if @reservation.expires_at %>
-    <p><strong>Expires At:</strong> <%= @reservation.expires_at.strftime("%B %d, %Y at %H:%M") %></p>
-  <% end %>
-  
   <% if @reservation.status == 'pending' %>
     <%= link_to "Cancel Reservation", cancel_reservation_path(@reservation), 
         data: { turbo_method: :patch }, class: "btn btn-danger" %>

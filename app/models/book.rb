@@ -46,9 +46,11 @@ class Book < ApplicationRecord
   private
  
   def normalize_isbn
-    return if isbn.blank?
-    self.isbn = isbn.gsub(/[^0-9X]/i, "").upcase#isbn can be numbers and can end with X
-    #upcase it and save to book
+    if isbn.blank?
+    self.isbn = nil
+    else
+      self.isbn = isbn.gsub(/[^0-9X]/i, "").upcase#isbn can be numbers and can end with X
+    end  #upcase it and save to book
   end
   def set_initial_copies
     self.available_copies ||= total_copies

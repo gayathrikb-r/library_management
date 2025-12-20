@@ -26,7 +26,7 @@ class Borrowing < ApplicationRecord
     update!(status: 'returned', returned_date: Date.today)
   end
   def overdue?
-    active? && Date.today>due_date
+    returned_date.nil? && due_date.present? && Date.today > due_date
   end
   def active?
     status=='active'

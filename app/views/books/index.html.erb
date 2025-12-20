@@ -1,26 +1,33 @@
-<h1>📚 Book Catalog</h1>
+<div class="header-section">
+  <h1>📚 Book Catalog</h1>
+</div>
 
 <div class="card">
-  <%= form_with url: books_path, method: :get do |f| %>
-    <div style="display: flex; gap: 10px;">
-      <%= f.text_field :search, placeholder: "Search books by title or ISBN...", 
-          value: params[:search], style: "flex: 1;" %>
-      
-      <%= f.select :category_id, 
+  <%= form_with url: books_path, method: :get, local: true, class: "filter-form" do |f| %>
+    <div class="filter-row">
+      <%= f.text_field :search,
+          placeholder: "Search books by title or ISBN...",
+          value: params[:search],
+          class: "filter-input search-main" %>
+
+      <%= f.select :category_id,
           options_from_collection_for_select(Category.all, :id, :name, params[:category_id]),
-          { include_blank: "All Categories" } %>
-      
-      <%= f.select :available, 
-          options_for_select([["All Books", ""], ["Available Only", "true"]], params[:available]) %>
-      
-      <%= f.submit "Search", class: "btn" %>
+          { prompt: "All Categories" },
+          { class: "filter-input" } %>
+
+      <%= f.select :available,
+          options_for_select([["All Books", ""], ["Available Only", "true"]], params[:available]),
+          {},
+          { class: "filter-input" } %>
+
+      <%= f.submit "Search", class: "btn btn-primary" %>
       <%= link_to "Clear", books_path, class: "btn btn-secondary" %>
     </div>
   <% end %>
 </div>
 
 
-  <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success" %>
+  <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success mb-20" %>
 
 
 <div class="grid">
@@ -42,11 +49,14 @@
           (<%= book.average_rating.round(1) %>/5)
         </p>
       <% end %>
-      <%= link_to "View Details", book, class: "btn" %>
+      <%= link_to "View Details", book, class: "btn mt-10" %>
     </div>
   <% end %>
 </div>
 
+<div class="pagination-container">
+  <%= paginate @books %>
+</div>
 <% if @books.empty? %>
   <div class="card">
     <p>No books found. Try adjusting your search criteria.</p>

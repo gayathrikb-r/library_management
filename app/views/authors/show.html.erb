@@ -70,13 +70,26 @@
         <p style="font-size: 0.85em; color: #666;">
           <%= review.created_at.strftime("%B %d, %Y") %>
         </p>
-        
-        <% if librarian? && review.status == 'pending' %>
-          <%= link_to "Approve", approve_review_path(review), 
-              data: { turbo_method: :patch }, class: "btn btn-success" %>
-          <%= link_to "Flag", flag_review_path(review), 
-              data: { turbo_method: :patch }, class: "btn btn-danger" %>
-        <% end %>
+        <p style="color:red; font-size:12px;">
+        DEBUG →
+        librarian?: <%= librarian? %> |
+        current_user: <%= current_user&.id %> |
+        review.user: <%= review.user.id %> |
+        review.status: <%= review.status.inspect %>
+      </p>
+
+       <% if librarian? && review.status == "pending" %>
+        <%= link_to "Approve",
+            approve_librarian_review_path(review),
+            data: { turbo_method: :patch, turbo_confirm: "Approve this review?" },
+            class: "btn btn-success" %>
+
+        <%= link_to "Flag",
+            flag_review_path(review),
+            data: { turbo_method: :patch, turbo_confirm: "Flag this review?" },
+            class: "btn btn-danger" %>
+      <% end %>
+
         
         <% if current_user == review.user %>
           <%= link_to "Delete", author_review_path(@author, review), 

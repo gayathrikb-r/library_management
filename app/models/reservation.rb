@@ -12,9 +12,11 @@ class Reservation < ApplicationRecord
   scope :pending, -> {where(status: 'pending')}
   scope :fulfilled, -> {where(status: 'fulfilled')}
   scope :cancelled, -> {where(status: 'cancelled')}
-  def cancel!
-    update(status: 'cancelled')
-  end
+def cancel!
+  update_column(:status, 'cancelled')
+end
+
+
 
   private
   def set_reservation_date

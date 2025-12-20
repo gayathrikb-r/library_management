@@ -1,4 +1,4 @@
-<h1>📖 Authors</h1>
+<h1>Authors</h1>
 
 <div class="card">
   <%= form_with url: authors_path, method: :get do |f| %>
@@ -12,7 +12,7 @@
 </div>
 
 <% if librarian? %>
-  <%= link_to "➕ Add New Author", new_author_path, class: "btn btn-success" %>
+  <%= link_to "➕ Add New Author", new_author_path, class: "btn btn-success mb-20" %>
 <% end %>
 
 <div class="grid">
@@ -23,7 +23,7 @@
       <% if author.birth_date %>
         <p><strong>Born:</strong> <%= author.birth_date.strftime("%B %d, %Y") %></p>
       <% end %>
-      <%= link_to "View Details", author, class: "btn" %>
+      <%= link_to "View Details", author, class: "btn mt-10" %>
     </div>
   <% end %>
 </div>

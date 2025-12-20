@@ -121,6 +121,133 @@
       .badge-warning { background: #fff3cd; color: #856404; }
       .badge-info { background: #d1ecf1; color: #0c5460; }
       .star-rating { color: #ffc107; }
+  
+      .filter-row {
+        display: flex;
+        align-items: center; /* Keeps everything aligned vertically */
+        gap: 8px;            /* Consistent spacing between elements */
+        width: 100%;
+      }
+
+      .filter-input {
+        height: 38px;        /* Standardized height for inputs and selects */
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+     
+
+      .btn {
+        height: 38px;        /* Matches the input height */
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        white-space: nowrap; /* Prevents button text from wrapping */
+      }
+            /* 1. Fix the Header and Button alignment */
+      .header-section {
+        display: flex;
+        justify-content: space-between; /* Pushes title left, button right */
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      /* 2. Prevent the button from stretching */
+      .btn {
+        display: inline-flex; /* Shrinks to fit content */
+        align-items: center;
+        width: auto;          /* Explicitly prevents full-width */
+        white-space: nowrap;  /* Keeps text on one line */
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        
+      }
+
+      /* 3. Keep the filter row tight */
+      .filter-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .search-main {
+        flex-grow: 1;
+        
+      }
+      .mb-20 {
+        margin-bottom: 20px;
+      }
+       .mt-10 {
+        margin-top: 10px;
+      }
+      .pagination-container {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      /* Base style for all links and the current page */
+      .pagination-container a, 
+      .pagination-container .current,
+      .pagination-container .page a,
+      .pagination-container .next a,
+      .pagination-container .prev a,
+      .pagination-container .last a,
+      .pagination-container .first a {
+        padding: 8px 16px;
+        border: 1.5px solid #dddddd;
+        text-decoration: none;
+        border-radius: 4px;
+        color: grey;
+        transition: all 0.2s ease-in-out; /* Makes the color change smooth */
+      }
+
+      /* Hover state: Change background and make text white */
+      .pagination-container a:hover {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white !important; /* Forces text to white on hover */
+      }
+
+      /* Current page style */
+      .pagination-container .current {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        cursor: default;
+      } 
+      /* Container for the checkbox list */
+      .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+
+      /* Overriding your global 'label' and 'input' for checkboxes only */
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: normal; /* Checkbox labels shouldn't usually be bold */
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: auto; /* Prevents checkbox from stretching to 100% width */
+        margin-bottom: 0;
+      }
+      .action-buttons {
+        display: flex;      /* Align children (buttons) horizontally */
+        gap: 10px;          /* Creates exactly 10px of space between them */
+        align-items: center; /* Ensures they stay centered vertically */
+      }
     </style>
   </head>
 

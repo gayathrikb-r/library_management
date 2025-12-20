@@ -46,13 +46,21 @@
                 <span class="badge badge-info">Active</span>
               <% end %>
             </td>
+          <td>
             <td>
+            <div class="action-buttons">
+              <%= link_to "Details", borrowing_path(borrowing), class: "btn btn-secondary" %>
+              
               <% if borrowing.status != 'returned' %>
-                <%= link_to "Return", return_book_borrowing_path(borrowing), 
-                    data: { turbo_method: :patch }, class: "btn btn-success" %>
+                <%= link_to "Return", 
+                    return_book_borrowing_path(borrowing), 
+                    data: { turbo_method: :patch, turbo_confirm: "Mark this book as returned?" }, 
+                    class: "btn btn-success" %>
               <% end %>
-              <%= link_to "Details", borrowing, class: "btn btn-secondary" %>
-            </td>
+            </div>
+          </td>
+         
+          </td>
           </tr>
         <% end %>
       </tbody>

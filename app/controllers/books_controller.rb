@@ -1,6 +1,6 @@
 class BooksController < ApplicationController
   # skip_before_action :require_login, only: [:index, :show]
-  before_action :set_book, only: [:show,:edit,:update, :destroy,:borrow,:reserve]
+ before_action :set_book, only: [:show, :edit, :update, :destroy, :borrow, :reserve]
   # before_action :require_librarian, only: [:new,:create,:edit,:update, :destroy]
   
   def index
@@ -31,6 +31,20 @@ class BooksController < ApplicationController
 
   def create
     @book = Book.new(book_params)
+    if params[:book][:new_author_name].present?
+      author_names=params[:book][:new_author_name].split(',').map(&:strip).reject(&:blank?)
+      author_names.each do |name|
+        author=Author.find_or_create_by(name: name)
+        @book.authors<<author unless @book.authors.include?(author)
+      end
+    end
+    if params[:book][:new_category_name].present?
+      category_names=params[:book][:new_category_name].split(',').map(&:strip).reject(&:blank?)
+      category_names.each do |name|
+        category=Category.find_or_create_by(name: name)
+        @book.categories<<category unless @book.categories.include?(category)
+      end
+    end
     if @book.save
       flash[:notice] = "Book created successfully"
       redirect_to @book
@@ -67,8 +81,8 @@ class BooksController < ApplicationController
     # borrowing=current_user.borrowings.build(book: @book)
     if borrowing.save
       flash[:notice]="Book borrowed successfully! Due date: #{borrowing.due_date}"
-      # redirect_to user_dashboard_path(current_user)
-        redirect_to user_dashboard_path(User.first)
+      # redirect_to dashboard_user_path(current_user)
+        redirect_to dashboard_user_path(User.first)
     else
       flash[:alert]=borrowing.errors.full_messages.join(", ")
       redirect_to @book
@@ -79,8 +93,8 @@ class BooksController < ApplicationController
     # reservation = current_user.reservations.build(book: @book)
     if reservation.save
       flash[:notice] = "Book reserved successfully! We'll notify you when it's available."
-      redirect_to user_dashboard_path(User.first)
-      # redirect_to user_dashboard_path(current_user)
+      redirect_to dashboard_user_path(User.first)
+      # redirect_to dashboard_user_path(current_user)
     else
       flash[:alert] = reservation.errors.full_messages.join(", ")
       redirect_to @book

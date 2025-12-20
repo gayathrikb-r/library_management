@@ -38,17 +38,87 @@
       <%= f.text_area :description %>
     </div>
     
-    <div class="form-group">
-      <%= f.label :author_ids, "Authors" %>
-      <%= f.collection_check_boxes :author_ids, Author.all, :id, :name %>
+   <div class="form-group">
+      <label style="font-weight: bold; margin-bottom: 10px; display: block;">Authors</label>
+      
+      <!-- Existing Authors (Checkboxes) -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+        <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Authors:</p>
+        <div class="checkbox-group" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: white; border-radius: 4px;">
+          <% if Author.any? %>
+            <%= f.collection_check_boxes :author_ids, Author.all.order(:name), :id, :name do |b| %>
+              <div class="checkbox-item" style="margin-bottom: 8px;">
+                <%= b.check_box style: "margin-right: 8px;" %>
+                <%= b.label style: "cursor: pointer;" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p style="color: #999; font-style: italic;">No authors in database yet</p>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Add New Authors (Text Field) -->
+      <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; border: 2px solid #007bff;">
+        <p style="margin-bottom: 10px; font-weight: bold; color: #007bff;">Or Add New Authors:</p>
+        <%= text_field_tag 'book[new_author_name]', nil, 
+            placeholder: "Enter author name(s), separated by commas (e.g., John Smith, Jane Doe)",
+            style: "width: 100%; padding: 10px; border: 1px solid #007bff; border-radius: 4px;" %>
+        <small style="color: #666; display: block; margin-top: 5px;">
+           Tip: You can enter multiple authors separated by commas. They'll be created automatically!
+        </small>
+      </div>
     </div>
     
+    <!-- CATEGORIES SECTION -->
     <div class="form-group">
-      <%= f.label :category_ids, "Categories" %>
-      <%= f.collection_check_boxes :category_ids, Category.all, :id, :name %>
+      <label style="font-weight: bold; margin-bottom: 10px; display: block;">Categories</label>
+      
+      <!-- Existing Categories (Checkboxes) -->
+      <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+        <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Categories:</p>
+        <div class="checkbox-group" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background: white; border-radius: 4px;">
+          <% if Category.any? %>
+            <%= f.collection_check_boxes :category_ids, Category.all.order(:name), :id, :name do |b| %>
+              <div class="checkbox-item" style="margin-bottom: 8px;">
+                <%= b.check_box style: "margin-right: 8px;" %>
+                <%= b.label style: "cursor: pointer;" %>
+              </div>
+            <% end %>
+          <% else %>
+            <p style="color: #999; font-style: italic;">No categories in database yet</p>
+          <% end %>
+        </div>
+      </div>
+      
+      <!-- Add New Categories (Text Field) -->
+      <div style="background: #fff3e0; padding: 15px; border-radius: 4px; border: 2px solid #ff9800;">
+        <p style="margin-bottom: 10px; font-weight: bold; color: #ff9800;">Or Add New Categories:</p>
+        <%= text_field_tag 'book[new_category_name]', nil, 
+            placeholder: "Enter category name(s), separated by commas (e.g., Mystery, Thriller)",
+            style: "width: 100%; padding: 10px; border: 1px solid #ff9800; border-radius: 4px;" %>
+        <small style="color: #666; display: block; margin-top: 5px;">
+           Tip: You can enter multiple categories separated by commas. They'll be created automatically!
+        </small>
+      </div>
     </div>
-    
     <%= f.submit "Create Book", class: "btn" %>
     <%= link_to "Cancel", books_path, class: "btn btn-secondary" %>
   <% end %>
 </div>
+<style>
+  .checkbox-group {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 5px;
+  }
+  
+  .checkbox-item {
+    display: flex;
+    align-items: center;
+  }
+  
+  .checkbox-item input[type="checkbox"] {
+    cursor: pointer;
+  }
+</style>

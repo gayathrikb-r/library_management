@@ -1,5 +1,5 @@
 class BorrowingsController < ApplicationController
-  # before_action :set_borrowing, only: [:show, :return_book]
+  before_action :set_borrowing, only: [:show, :return_book]
   def index
      @borrowings = Borrowing.includes(:user, :book).order(created_at: :desc)
     # if librarian?

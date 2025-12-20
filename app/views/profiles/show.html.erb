@@ -8,8 +8,25 @@
   <p><%= @profile.birth_date&.strftime("%B %d, %Y") || "Not provided" %></p>
   
   <h3>Liked Genres</h3>
-  <p><%= @profile.liked_genres || "No preferences set" %></p>
+  <p>
+    <% if @profile.liked_genres.present? && @profile.liked_genres.any? %>
+      <% @profile.liked_genres.each do |genre| %>
+        <span class="badge badge-info" style="margin-right: 5px; display: inline-block; padding: 6px 12px; background: #17a2b8; color: white; border-radius: 4px;"><%= genre %></span>
+      <% end %>
+    <% else %>
+      <em style="color: #999;">No preferences set</em>
+    <% end %>
+  </p>
   
-  <%= link_to "Edit Profile", edit_user_profile_path(@user), class: "btn" %>
-  <%= link_to "Back to Account", @user, class: "btn btn-secondary" %>
+  <h3>Favorite Author</h3>
+  <p>
+    <% if @user.favorite_author %>
+      <%= link_to @user.favorite_author.name, author_path(@user.favorite_author) %>
+    <% else %>
+      <em style="color: #999;">Not set</em>
+    <% end %>
+  </p>
+  
+  <%= link_to "Edit Profile", edit_profile_path, class: "btn" %>
+  <%= link_to "Back to Account", user_path(@user), class: "btn btn-secondary" %>
 </div>

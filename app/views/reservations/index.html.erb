@@ -5,25 +5,22 @@
     <table>
       <thead>
         <tr>
-          <% if librarian? %>
-            <th>User</th>
-          <% end %>
           <th>Book</th>
           <th>Reserved Date</th>
           <th>Status</th>
-          <th>Notified At</th>
-          <th>Expires At</th>
           <th>Actions</th>
         </tr>
       </thead>
+
       <tbody>
         <% @reservations.each do |reservation| %>
           <tr>
-            <% if librarian? %>
-              <td><%= link_to reservation.user.name, reservation.user %></td>
-            <% end %>
-            <td><%= link_to reservation.book.title, reservation.book %></td>
-            <td><%= reservation.reservation_date.strftime("%b %d, %Y") %></td>
+            <td><%= reservation.book.title %></td>
+
+            <td>
+              <%= reservation.reservation_date.strftime("%b %d, %Y") %>
+            </td>
+
             <td>
               <% case reservation.status %>
               <% when 'pending' %>
@@ -34,14 +31,18 @@
                 <span class="badge badge-danger">Cancelled</span>
               <% end %>
             </td>
-            <td><%= reservation.notified_at&.strftime("%b %d, %Y %H:%M") || "-" %></td>
-            <td><%= reservation.expires_at&.strftime("%b %d, %Y %H:%M") || "-" %></td>
+
             <td>
               <% if reservation.status == 'pending' %>
-                <%= link_to "Cancel", cancel_reservation_path(reservation), 
-                    data: { turbo_method: :patch }, class: "btn btn-danger" %>
+                <%= link_to "Cancel",
+                    cancel_reservation_path(reservation),
+                    data: { turbo_method: :patch },
+                    class: "btn btn-danger btn-sm" %>
               <% end %>
-              <%= link_to "Details", reservation, class: "btn btn-secondary" %>
+
+              <%= link_to "Details",
+                  reservation,
+                  class: "btn btn-secondary btn-sm" %>
             </td>
           </tr>
         <% end %>
