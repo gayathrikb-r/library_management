@@ -1,15 +1,8 @@
 <div class="card">
   <h1><%= @user.name %></h1>
-  
+
   <p><strong>Email:</strong> <%= @user.email %></p>
   <p><strong>Phone:</strong> <%= @user.phone || "Not provided" %></p>
-  <p><strong>Role:</strong> <%= @user.role.capitalize %></p>
-  <p><strong>Member since:</strong> <%= @user.membership_date&.strftime("%B %d, %Y") %></p>
-  
-  <% if current_user == @user %>
-    <%= link_to "Edit Profile",  edit_profile_path, class: "btn" %>
-    <%= link_to "View Full Profile", profile_path, class: "btn btn-secondary" %>
-  <% end %>
 </div>
 
 <% if current_user == @user %>

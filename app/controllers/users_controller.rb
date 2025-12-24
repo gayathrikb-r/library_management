@@ -27,7 +27,7 @@ class UsersController < ApplicationController
 
   def update
     if @user.update(user_params)
-      flash[:notice] = "Profile updated successfully"
+      flash[:notice] = "Account updated successfully"
       redirect_to @user
     else
       render :edit, status: :unprocessable_entity
