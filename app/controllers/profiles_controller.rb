@@ -12,7 +12,7 @@ class ProfilesController < ApplicationController
 
     def update
       @profile = @user.profile
-      # Clean up liked_genres parameter
+      # to clean up liked_genres parameter
       if params[:profile][:liked_genres].present?
           if params[:profile][:liked_genres].is_a?(Array)
             params[:profile][:liked_genres] = params[:profile][:liked_genres].reject(&:blank?)
@@ -34,10 +34,7 @@ class ProfilesController < ApplicationController
      @user = current_user
   end
   def require_correct_user
-    # unless current_user == @user
-    #   flash[:alert] = "Not authorized"
-    #   redirect_to root_path
-    # end
+
   end
   
   def profile_params

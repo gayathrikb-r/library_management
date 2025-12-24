@@ -1,18 +1,18 @@
 class ReviewsController < ApplicationController
   before_action :set_reviewable
-  before_action :set_review, only: [:update,:edit,:destroy,:update,:flag]
-  # before_action :require_librarian, only: [:approve,:flag]
+  before_action :set_review, only: [ :update, :edit, :destroy, :flag ]
+
   def create
     @review=@reviewable.reviews.build(review_params)
     @review.user = User.first
-    # @review.user=current_user
+     # @review.user=current_user
      if @review.save
       flash[:notice] = "Review submitted successfully. It will be visible after approval."
       redirect_to @reviewable
-    else
+     else
       flash[:alert] = @review.errors.full_messages.join(", ")
       redirect_to @reviewable
-    end
+     end
   end
 
   def edit
@@ -32,17 +32,11 @@ class ReviewsController < ApplicationController
     flash[:notice] = "Review deleted"
     redirect_to @reviewable
   end
-
-  def approve
-    @review.approve!
-    flash[:notice] = "Review approved"
-    redirect_to @reviewable
-  end
-
   def flag
-    @review.flag!
-    flash[:notice] = "Review flagged"
-    redirect_to @reviewable
+  review = Review.find(params[:id])
+  review.update!(status: "flagged")
+  flash[:notice] = "Review flagged"
+  redirect_to review.reviewable
   end
   private
   def set_reviewable
@@ -54,10 +48,7 @@ class ReviewsController < ApplicationController
   end
   def set_review
     @review=Review.find(params[:id])
-    # unless librarian? || @review.user == current_user
-    #   flash[:alert] = "Not authorized"
-    #   redirect_to root_path
-    # end
+
   end
   def review_params
     params.require(:review).permit(:rating, :comment)

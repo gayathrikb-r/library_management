@@ -1,7 +1,7 @@
 class UsersController < ApplicationController
-  # skip_before_action :require_login, only: [:new, :create]
+
   before_action :set_user, only: [:show,:edit,:update,:destroy,:dashboard]
-  # before_action :require_correct_user_or_librarian, only: [:edit, :update, :destroy]
+
   def new
     @user=User.new
   end
@@ -63,9 +63,6 @@ class UsersController < ApplicationController
   end
 
   def require_correct_user_or_librarian
-  #   unless current_user == @user || librarian?
-  #     flash[:alert] = "Not authorized"
-  #     redirect_to root_path
-  #   end
+
   end
 end
