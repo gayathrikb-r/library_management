@@ -1,5 +1,7 @@
 class Category < ApplicationRecord
   has_many :book_categories, dependent: :destroy
+  has_many :member_categories, dependent: :destroy
+  has_many :members, through: :member_categories
   #if category deleted, join rows in book_categories including that category deleted
   has_many :books, through: :book_categories
 

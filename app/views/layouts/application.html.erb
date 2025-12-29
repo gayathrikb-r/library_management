@@ -275,7 +275,8 @@
           <%= link_to "Dashboard", dashboard_user_path(User.first) if User.any? %>
           <%= link_to "All Borrowings", borrowings_path %>
             <%= link_to "Reservations", reservations_path %>
-              <%= link_to "Librarian Dashboard", librarian_root_path %>
+              <%= link_to "Librarian Dashboard", admin_root_path
+ %>
         </div>
       </nav>
     </header>

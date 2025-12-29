@@ -1,2 +1,0 @@
-module Librarian::DashboardHelper
-end

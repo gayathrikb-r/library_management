@@ -1,39 +1,44 @@
 class Reservation < ApplicationRecord
-  belongs_to :user
+  belongs_to :member
   belongs_to :book
-  #Validations
+
+  enum :status, {
+    pending: 0,
+    fulfilled: 1,
+    cancelled: 2
+  }
+
   validates :reservation_date, presence: true
   validate :book_is_unavailable, on: :create
-  validate :user_cannot_have_duplicate_reservation
-  #Callbacks
-  before_validation :set_reservation_date, on: :create
+  validate :no_duplicate_reservation, on: :create
+
+  before_validation :set_defaults, on: :create
   after_create :send_confirmation
-  #Scope
-  scope :pending, -> {where(status: 'pending')}
-  scope :fulfilled, -> {where(status: 'fulfilled')}
-  scope :cancelled, -> {where(status: 'cancelled')}
-def cancel!
-  update_column(:status, 'cancelled')
-end
 
-
+  def cancel!
+    cancelled!
+  end
 
   private
-  def set_reservation_date
-    self.reservation_date ||=Date.today
+
+  def set_defaults
+    self.reservation_date ||= Date.today
+    self.status ||= "pending"
   end
+
   def book_is_unavailable
-    if book&.available?
-      errors.add(:base, "Book is currently available, no need to reserve")
+    errors.add(:base, "Book is currently available") if book&.available?
+  end
+
+  def no_duplicate_reservation
+    return unless member && book
+
+    if member.reservations.pending.where(book: book).exists?
+      errors.add(:base, "You already have a pending reservation for this book")
     end
   end
 
-  def user_cannot_have_duplicate_reservation
-    if user && book && user.reservations.where(book: book, status: 'pending').exists?
-      errors.add(:base, "You already have a pending reservation for this book.")
-    end
-  end
   def send_confirmation
-    puts "Reservation confirmation sent to #{user.email}"
+    Rails.logger.info("Reservation confirmation sent to #{member.email}")
   end
 end

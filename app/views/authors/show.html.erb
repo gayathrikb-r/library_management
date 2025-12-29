@@ -73,7 +73,7 @@
   
        <% if librarian? && review.status == "pending" %>
         <%= link_to "Approve",
-            approve_librarian_review_path(review),
+            approve_admin_review_path(review),
             data: { turbo_method: :patch, turbo_confirm: "Approve this review?" },
             class: "btn btn-success" %>
 

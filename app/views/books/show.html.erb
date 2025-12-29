@@ -75,7 +75,7 @@
         </p>
         
         <% if librarian? && review.status == 'pending' %>
-          <%= link_to "Approve",   approve_librarian_review_path(review), 
+          <%= link_to "Approve",   approve_admin_review_path(review), 
               data: { turbo_method: :patch }, class: "btn btn-success" %>
           <%= link_to "Flag", flag_review_path(review), 
               data: { turbo_method: :patch }, class: "btn btn-danger" %>

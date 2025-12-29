@@ -3,9 +3,14 @@ class ApplicationController < ActionController::Base
   allow_browser versions: :modern
   helper_method :current_user, :logged_in?, :librarian?
 
-  def current_user
-      @current_user ||= User.first
+  def current_member
+    Member.first
   end
+
+  def current_librarian
+    Librarian.first
+  end
+  
   def logged_in?
     true
   end
@@ -15,7 +20,7 @@ class ApplicationController < ActionController::Base
   def require_login
       nil
   end
-  def require_librarian
+  def require_admin
     nil
   end
   def skip_login_required

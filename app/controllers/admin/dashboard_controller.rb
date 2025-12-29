@@ -1,0 +1,17 @@
+module Admin
+  class DashboardController < ApplicationController
+    def index
+      @total_books=Book.count 
+      @total_users = User.count
+      @active_borrowings = Borrowing.active.count
+      @overdue_borrowings = Borrowing.overdue.count
+      @recent_borrowings = Borrowing.includes(:user, :book).order(created_at: :desc).limit(10)
+      @pending_reservations = Reservation.pending.count
+      @pending_review_records = Review
+        .pending
+        .includes(:user, :reviewable)
+      @pending_reviews = @pending_review_records.count
+      @overdue_books = Borrowing.overdue.includes(:user, :book).order(due_date: :asc)
+    end
+  end
+end

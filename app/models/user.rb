@@ -1,6 +1,5 @@
 class User < ApplicationRecord
-  has_secure_password
-
+  has_one :member, dependent: :destroy
   has_many :borrowings, dependent: :destroy
   has_many :reservations, dependent: :destroy
   has_many :reviews, dependent: :destroy

@@ -1,36 +1,43 @@
 class Review < ApplicationRecord
-  belongs_to :user
+  belongs_to :reviewer, polymorphic: true
   belongs_to :reviewable, polymorphic: true
-  STATUSES = %w[pending approved flagged].freeze
-  validates :rating, presence: true, inclusion: {in: 1..5}
-  validates :comment, presence: true, length: {minimum: 10, maximum: 1000}
-  validates :status, inclusion: {in: STATUSES}
-  validates :user_id, uniqueness: {scope: [:reviewable_id, :reviewable_type],message: "has already reviewed this item"}
-  # Callbacks
+
+  enum status: { pending: 0, approved: 1, flagged: 2 }
+
+  validates :rating, inclusion: { in: 1..5 }
+  validates :comment, length: { minimum: 10, maximum: 1000 }
+
+  validates :reviewer_id,
+            uniqueness: {
+              scope: %i[reviewer_type reviewable_id reviewable_type],
+              message: "has already reviewed this item"
+            }
+
   before_validation :strip_comment
   after_save :update_reviewable_rating, if: :saved_change_to_rating_or_status?
   after_destroy :update_reviewable_rating
 
-  # Scopes
-  scope :approved, -> { where(status: 'approved') }
-  scope :pending, -> { where(status: 'pending') }
-  scope :flagged, -> { where(status: 'flagged') }
+  scope :recent, -> { order(created_at: :desc) }
+
   def approve!
-    update(status: 'approved')
+    approved!
   end
+
   def flag!
-    update(status: 'flagged')
+    flagged!
   end
+
   private
+
   def strip_comment
-    self.comment =comment.strip if comment
+    self.comment = comment.strip if comment.present?
   end
+
   def saved_change_to_rating_or_status?
-    saved_change_to_status? || saved_change_to_rating?
+    saved_change_to_rating? || saved_change_to_status?
   end
+
   def update_reviewable_rating
-    return unless reviewable.respond_to?(:update_average_rating!)
-    reviewable.update_average_rating!
+    reviewable.update_average_rating! if reviewable.respond_to?(:update_average_rating!)
   end
-  
 end

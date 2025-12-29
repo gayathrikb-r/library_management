@@ -1,20 +1,11 @@
 class BooksController < ApplicationController
- before_action :set_book, only: [ :show, :edit, :update, :destroy, :borrow, :reserve ]
+  before_action :set_book, only: [:show, :edit, :update, :destroy, :borrow, :reserve]
 
   def index
-    @books=Book.includes(:authors, :categories).all
-    if params[:search].present?
-      @books = @books.where("title ILIKE ? OR isbn ILIKE ?", "%#{params[:search]}%", "%#{params[:search]}%")
-    end
-    # Filter by category
-    if params[:category_id].present?
-      @books = @books.joins(:categories).where(categories: { id: params[:category_id] })
-    end
-
-    # Filter by availability
-    if params[:available] == "true"
-      @books = @books.available
-    end
+    @books = Book.includes(:authors, :categories)
+                 .search(params[:search])
+                 .by_category(params[:category_id])
+    @books = @books.available if params[:available] == "true"
     @books = @books.page(params[:page]).per(12)
   end
 
@@ -24,25 +15,11 @@ class BooksController < ApplicationController
   end
 
   def new
-     @book = Book.new
+    @book = Book.new
   end
 
   def create
     @book = Book.new(book_params)
-    if params[:book][:new_author_name].present?
-      author_names=params[:book][:new_author_name].split(",").map(&:strip).reject(&:blank?)
-      author_names.each do |name|
-        author=Author.find_or_create_by(name: name)
-        @book.authors<<author unless @book.authors.include?(author)
-      end
-    end
-    if params[:book][:new_category_name].present?
-      category_names=params[:book][:new_category_name].split(",").map(&:strip).reject(&:blank?)
-      category_names.each do |name|
-        category=Category.find_or_create_by(name: name)
-        @book.categories<<category unless @book.categories.include?(category)
-      end
-    end
     if @book.save
       flash[:notice] = "Book created successfully"
       redirect_to @book
@@ -51,25 +28,10 @@ class BooksController < ApplicationController
     end
   end
 
-  def edit
-  end
+  def edit; end
 
   def update
     if @book.update(book_params)
-      if params[:book][:new_author_name].present?
-        author_names=params[:book][:new_author_name].split(",").map(&:strip).reject(&:blank?)
-        author_names.each do |name|
-          author=Author.find_or_create_by(name: name)
-          @book.authors<<author unless @book.authors.include?(author)
-        end
-      end
-      if params[:book][:new_category_name].present?
-        category_names=params[:book][:new_category_name].split(",").map(&:strip).reject(&:blank?)
-        category_names.each do |name|
-          category=Category.find_or_create_by(name: name)
-          @book.categories<<category unless @book.categories.include?(category)
-        end
-      end
       flash[:notice] = "Book updated successfully"
       redirect_to @book
     else
@@ -88,34 +50,39 @@ class BooksController < ApplicationController
   end
 
   def borrow
-    borrowing = User.first.borrowings.build(book: @book)
-
+    borrowing = current_member.borrowings.build(book: @book)
     if borrowing.save
-      flash[:notice]="Book borrowed successfully! Due date: #{borrowing.due_date}"
-
-        redirect_to dashboard_user_path(User.first)
+      flash[:notice] = "Book borrowed successfully! Due date: #{borrowing.due_date}"
+      redirect_to member_dashboard_path
     else
-      flash[:alert]=borrowing.errors.full_messages.join(", ")
+      flash[:alert] = borrowing.errors.full_messages.join(", ")
       redirect_to @book
     end
   end
-  def reserve
-    reservation = User.first.reservations.build(book: @book)
 
+  def reserve
+    reservation = current_member.reservations.build(book: @book)
     if reservation.save
       flash[:notice] = "Book reserved successfully! We'll notify you when it's available."
-      redirect_to dashboard_user_path(User.first)
-
+      redirect_to member_dashboard_path
     else
       flash[:alert] = reservation.errors.full_messages.join(", ")
       redirect_to @book
     end
   end
+
   private
+
   def set_book
-    @book=Book.find(params[:id])
+    @book = Book.find(params[:id])
   end
+
   def book_params
-    params.require(:book).permit(:title, :isbn, :publication_year, :total_copies, :available_copies, :description, author_ids: [], category_ids: [])
+    # Only allow IDs for existing authors and categories
+    params.require(:book).permit(
+      :title, :isbn, :publication_year,
+      :total_copies, :available_copies, :description,
+      author_ids: [], category_ids: []
+    )
   end
 end

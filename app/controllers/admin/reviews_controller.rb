@@ -1,4 +1,4 @@
-module Librarian
+module Admin
   class ReviewsController <ApplicationController
     before_action :set_review, only: [:approve]
     def index

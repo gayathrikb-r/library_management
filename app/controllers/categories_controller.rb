@@ -1,56 +1,17 @@
 class CategoriesController < ApplicationController
-
-  before_action :set_category, only: [:show, :edit, :update, :destroy]
+  before_action :set_category, only: [:show]
 
   def index
-    @categories=Category.all.order(:name)
+    @categories = Category.order(:name)
   end
 
   def show
-    @books=@category.books.includes(:authors)
-  end
-
-  def new
-    @category = Category.new
-  end
-
-  def create
-    @category = Category.new(category_params)
-    if @category.save
-      flash[:notice] = "Category created successfully"
-      redirect_to categories_path
-    else
-      render :new, status: :unprocessable_entity
-    end
-  end
-
-  def edit
-  end
-
-  def update
-   if @category.update(category_params)
-      flash[:notice] = "Category updated successfully"
-      redirect_to categories_path
-    else
-      render :edit, status: :unprocessable_entity
-    end
-  end
-
-  def destroy
-    if @category.destroy
-    flash[:notice] = "Category deleted"
-    else
-      flash[:alert] = @category.errors.full_messages.to_sentence
-    end
-    redirect_to categories_path
+    @books = @category.books.includes(:authors)
   end
 
   private
+
   def set_category
     @category = Category.find(params[:id])
-  end
-  
-  def category_params
-    params.require(:category).permit(:name)
   end
 end

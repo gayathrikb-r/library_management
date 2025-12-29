@@ -1,8 +1,8 @@
 require "test_helper"
 
-class Librarian::DashboardControllerTest < ActionDispatch::IntegrationTest
+class Admin::DashboardControllerTest < ActionDispatch::IntegrationTest
   test "should get index" do
-    get librarian_dashboard_index_url
+    get admin_dashboard_index_url
     assert_response :success
   end
 end

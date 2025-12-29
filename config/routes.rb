@@ -1,22 +1,29 @@
 Rails.application.routes.draw do
-  get "up" => "rails/health#show", as: :rails_health_check
+  # Member namespace
+  namespace :member do
+    get "dashboard/show", to: "dashboard#show", as: :dashboard
+  end
 
+  # Health check & PWA
+  get "up" => "rails/health#show", as: :rails_health_check
   get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
   get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
 
+  # Root
   root "books#index"
 
-  get "/signup", to: "users#new"
-  post "/signup", to: "users#create"
+  # Devise routes
+  devise_for :members, path: "members", controllers: {
+    registrations: "members/registrations",
+    sessions: "members/sessions"
+  }
 
-  get "/login", to: "sessions#new"
-  post "/login", to: "sessions#create"
-  delete "/logout", to: "sessions#destroy"
+  devise_for :librarians, path: "librarians", controllers: {
+    registrations: "librarians/registrations",
+    sessions: "librarians/sessions"
+  }
 
-  resources :users do
-    member { get :dashboard }
-  end
-
+  # Books, authors, categories
   resources :books do
     member do
       post :borrow
@@ -31,6 +38,7 @@ Rails.application.routes.draw do
 
   resources :categories
 
+  # Borrowings & Reservations
   resources :borrowings, only: [:index, :show, :create] do
     member { patch :return_book }
   end
@@ -39,19 +47,14 @@ Rails.application.routes.draw do
     member { patch :cancel }
   end
 
+  # Reviews actions
   resources :reviews, only: [] do
     member { patch :flag }
   end
 
-  namespace :librarian do
-    get "dashboard/index"
-    root to: "dashboard#index"
-
-    resources :users
-    resources :borrowings
-    resources :reservations
-    resources :reviews do
-      member { patch :approve }
-    end
+  # Admin namespace handled by ActiveAdmin
+  namespace :admin do
+    root to: "dashboard#index" # ActiveAdmin default dashboard
+    # ActiveAdmin resources (will be registered in app/admin/*)
   end
 end

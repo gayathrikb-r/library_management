@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_24_113656) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_29_073208) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -67,18 +67,19 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_113656) do
   end
 
   create_table "borrowings", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.bigint "member_id", null: false
     t.bigint "book_id", null: false
     t.date "borrowed_date", null: false
     t.date "due_date", null: false
     t.date "returned_date"
-    t.string "status", default: "active"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "librarian_id"
+    t.integer "status", default: 0, null: false
     t.index ["book_id"], name: "index_borrowings_on_book_id"
     t.index ["due_date"], name: "index_borrowings_on_due_date"
-    t.index ["status"], name: "index_borrowings_on_status"
-    t.index ["user_id"], name: "index_borrowings_on_user_id"
+    t.index ["librarian_id"], name: "index_borrowings_on_librarian_id"
+    t.index ["member_id"], name: "index_borrowings_on_member_id"
   end
 
   create_table "categories", force: :cascade do |t|
@@ -88,52 +89,72 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_113656) do
     t.index ["name"], name: "index_categories_on_name", unique: true
   end
 
-  create_table "reservations", force: :cascade do |t|
-    t.bigint "user_id", null: false
-    t.bigint "book_id", null: false
-    t.date "reservation_date", null: false
-    t.string "status", default: "pending", null: false
+  create_table "librarians", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "phone"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["book_id", "status"], name: "index_reservations_on_book_id_and_status"
+    t.index ["email"], name: "index_librarians_on_email", unique: true
+  end
+
+  create_table "member_categories", force: :cascade do |t|
+    t.bigint "member_id", null: false
+    t.bigint "category_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["category_id"], name: "index_member_categories_on_category_id"
+    t.index ["member_id", "category_id"], name: "index_member_categories_on_member_id_and_category_id", unique: true
+    t.index ["member_id"], name: "index_member_categories_on_member_id"
+  end
+
+  create_table "members", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.string "phone"
+    t.text "bio"
+    t.date "birth_date"
+    t.bigint "favorite_author_id"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_members_on_email", unique: true
+    t.index ["favorite_author_id"], name: "index_members_on_favorite_author_id"
+  end
+
+  create_table "reservations", force: :cascade do |t|
+    t.bigint "member_id", null: false
+    t.bigint "book_id", null: false
+    t.date "reservation_date", null: false
+    t.datetime "notified_at"
+    t.datetime "expires_at"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["book_id"], name: "index_reservations_on_book_id"
-    t.index ["status"], name: "index_reservations_on_status"
-    t.index ["user_id", "book_id", "status"], name: "index_reservations_on_user_id_and_book_id_and_status"
-    t.index ["user_id"], name: "index_reservations_on_user_id"
+    t.index ["member_id"], name: "index_reservations_on_member_id"
   end
 
   create_table "reviews", force: :cascade do |t|
-    t.bigint "user_id", null: false
+    t.string "reviewer_type", null: false
+    t.bigint "reviewer_id", null: false
     t.string "reviewable_type", null: false
     t.bigint "reviewable_id", null: false
     t.integer "rating", null: false
     t.text "comment"
-    t.string "status", default: "pending", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "status", default: 0, null: false
     t.index ["reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewable"
-    t.index ["status"], name: "index_reviews_on_status"
-    t.index ["user_id", "reviewable_id", "reviewable_type"], name: "index_reviews_on_user_and_reviewable", unique: true
-    t.index ["user_id"], name: "index_reviews_on_user_id"
+    t.index ["reviewer_type", "reviewer_id", "reviewable_type", "reviewable_id"], name: "index_reviews_on_reviewer_and_reviewable", unique: true
+    t.index ["reviewer_type", "reviewer_id"], name: "index_reviews_on_reviewer"
   end
 
   create_table "tags", force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-  end
-
-  create_table "users", force: :cascade do |t|
-    t.string "name", null: false
-    t.string "email", null: false
-    t.string "password_digest", null: false
-    t.integer "role", default: 0, null: false
-    t.string "phone"
-    t.date "membership_date"
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.index ["email"], name: "index_users_on_email", unique: true
-    t.index ["role"], name: "index_users_on_role"
   end
 
   add_foreign_key "book_authors", "authors"
@@ -143,8 +164,11 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_24_113656) do
   add_foreign_key "books_tags", "books"
   add_foreign_key "books_tags", "tags"
   add_foreign_key "borrowings", "books"
-  add_foreign_key "borrowings", "users"
+  add_foreign_key "borrowings", "librarians"
+  add_foreign_key "borrowings", "members"
+  add_foreign_key "member_categories", "categories"
+  add_foreign_key "member_categories", "members"
+  add_foreign_key "members", "authors", column: "favorite_author_id"
   add_foreign_key "reservations", "books"
-  add_foreign_key "reservations", "users"
-  add_foreign_key "reviews", "users"
+  add_foreign_key "reservations", "members"
 end

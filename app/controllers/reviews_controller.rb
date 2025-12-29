@@ -1,18 +1,18 @@
 class ReviewsController < ApplicationController
   before_action :set_reviewable
   before_action :set_review, only: [ :update, :edit, :destroy, :flag ]
+  before_action :authorize_review_owner!, only: [:edit, :update, :destroy]
+  before_action :authenticate_member!
 
   def create
     @review=@reviewable.reviews.build(review_params)
-    @review.user = User.first
-     # @review.user=current_user
-     if @review.save
-      flash[:notice] = "Review submitted successfully. It will be visible after approval."
-      redirect_to @reviewable
-     else
-      flash[:alert] = @review.errors.full_messages.join(", ")
-      redirect_to @reviewable
-     end
+    @review.reviewer = current_member
+    @review.status = "pending"
+    if @review.save
+      redirect_to @reviewable, notice: "Review submitted. It will be visible after approval."
+    else
+      redirect_to @reviewable, alert: @review.errors.full_messages.to_sentence
+    end
   end
 
   def edit
@@ -20,8 +20,7 @@ class ReviewsController < ApplicationController
 
   def update
     if @review.update(review_params)
-      flash[:notice] = "Review updated"
-      redirect_to @reviewable
+      redirect_to @reviewable, notice: "Review updated successfully"
     else
       render :edit, status: :unprocessable_entity
     end
@@ -29,27 +28,33 @@ class ReviewsController < ApplicationController
 
   def destroy
     @review.destroy
-    flash[:notice] = "Review deleted"
-    redirect_to @reviewable
+    redirect_to @reviewable, notice: "Review deleted"
   end
   def flag
-  review = Review.find(params[:id])
-  review.update!(status: "flagged")
-  flash[:notice] = "Review flagged"
-  redirect_to review.reviewable
+    @review.flag!
+    redirect_to @reviewable, notice: "Review flagged for moderation"
   end
   private
   def set_reviewable
-    if params[:book_id]
-      @reviewable=Book.find(params[:book_id])
-    elsif params[:author_id]
-      @reviewable=Author.find(params[:author_id])
-    end
+    @reviewable =
+        if params[:book_id]
+          Book.find(params[:book_id])
+        elsif params[:author_id]
+          Author.find(params[:author_id])
+        else
+          raise ActiveRecord::RecordNotFound
+        end
   end
   def set_review
-    @review=Review.find(params[:id])
+   @review = @reviewable.reviews.find(params[:id])
 
   end
+  def authorize_review_owner!
+    return if @review.reviewer == current_member
+
+    redirect_to @reviewable, alert: "You are not authorized to perform this action"
+  end
+
   def review_params
     params.require(:review).permit(:rating, :comment)
   end

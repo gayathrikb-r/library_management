@@ -1,7 +1,7 @@
 class CreateBorrowings < ActiveRecord::Migration[7.2]
   def change
     create_table :borrowings do |t|
-      t.references :user, null: false, foreign_key: true
+      t.references :member, null: false, foreign_key: true 
       t.references :book, null: false, foreign_key: true
       t.date :borrowed_date, null: false
       t.date :due_date, null: false
