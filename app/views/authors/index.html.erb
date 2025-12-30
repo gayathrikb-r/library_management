@@ -11,7 +11,7 @@
   <% end %>
 </div>
 
-<% if librarian? %>
+<% if  librarian_signed_in? %>
   <%= link_to "➕ Add New Author", new_author_path, class: "btn btn-success mb-20" %>
 <% end %>
 

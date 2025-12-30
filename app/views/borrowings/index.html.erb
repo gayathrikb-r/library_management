@@ -1,6 +1,6 @@
 <h1>📖 Borrowings</h1>
 
-<% if librarian? %>
+<% if  librarian_signed_in? %>
   <div class="card">
     <div style="display: flex; gap: 10px;">
       <%= link_to "All", borrowings_path, class: "btn #{params[:filter].nil? ? 'btn-success' : ''}" %>
@@ -16,7 +16,7 @@
     <table>
       <thead>
         <tr>
-          <% if librarian? %>
+          <% if librarian_signed_in? %>
             <th>User</th>
           <% end %>
           <th>Book</th>
@@ -30,7 +30,7 @@
       <tbody>
         <% @borrowings.each do |borrowing| %>
           <tr>
-            <% if librarian? %>
+            <% if  librarian_signed_in? %>
               <td><%= link_to borrowing.user.name, borrowing.user %></td>
             <% end %>
             <td><%= link_to borrowing.book.title, borrowing.book %></td>

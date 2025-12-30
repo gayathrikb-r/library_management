@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_12_29_073208) do
+ActiveRecord::Schema[7.2].define(version: 2025_12_30_060442) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -92,11 +92,20 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_29_073208) do
   create_table "librarians", force: :cascade do |t|
     t.string "name", null: false
     t.string "email", null: false
-    t.string "password_digest", null: false
     t.string "phone"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
     t.index ["email"], name: "index_librarians_on_email", unique: true
+    t.index ["reset_password_token"], name: "index_librarians_on_reset_password_token", unique: true
   end
 
   create_table "member_categories", force: :cascade do |t|
@@ -112,15 +121,24 @@ ActiveRecord::Schema[7.2].define(version: 2025_12_29_073208) do
   create_table "members", force: :cascade do |t|
     t.string "name", null: false
     t.string "email", null: false
-    t.string "password_digest", null: false
     t.string "phone"
     t.text "bio"
     t.date "birth_date"
     t.bigint "favorite_author_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "encrypted_password", default: "", null: false
+    t.string "reset_password_token"
+    t.datetime "reset_password_sent_at"
+    t.datetime "remember_created_at"
+    t.integer "sign_in_count", default: 0, null: false
+    t.datetime "current_sign_in_at"
+    t.datetime "last_sign_in_at"
+    t.string "current_sign_in_ip"
+    t.string "last_sign_in_ip"
     t.index ["email"], name: "index_members_on_email", unique: true
     t.index ["favorite_author_id"], name: "index_members_on_favorite_author_id"
+    t.index ["reset_password_token"], name: "index_members_on_reset_password_token", unique: true
   end
 
   create_table "reservations", force: :cascade do |t|

@@ -74,7 +74,7 @@
           <%= review.created_at.strftime("%B %d, %Y") %>
         </p>
         
-        <% if librarian? && review.status == 'pending' %>
+        <% if  librarian_signed_in? && review.status == 'pending' %>
           <%= link_to "Approve",   approve_admin_review_path(review), 
               data: { turbo_method: :patch }, class: "btn btn-success" %>
           <%= link_to "Flag", flag_review_path(review), 

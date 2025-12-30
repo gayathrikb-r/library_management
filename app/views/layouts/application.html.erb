@@ -6,279 +6,46 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= stylesheet_link_tag "application", "application_custom", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
-    
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { 
-        font-family: Arial, sans-serif; 
-        line-height: 1.6; 
-        background: #f4f4f4;
-      }
-      .container { 
-        max-width: 1200px; 
-        margin: 0 auto; 
-        padding: 20px; 
-      }
-      header { 
-        background: #333; 
-        color: #fff; 
-        padding: 1rem 0; 
-        margin-bottom: 20px;
-      }
-      nav { 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        max-width: 1200px; 
-        margin: 0 auto; 
-        padding: 0 20px;
-      }
-      nav a { 
-        color: #fff; 
-        text-decoration: none; 
-        margin: 0 10px; 
-        padding: 5px 10px;
-      }
-      nav a:hover { background: #555; border-radius: 4px; }
-      .flash { 
-        padding: 15px; 
-        margin-bottom: 20px; 
-        border-radius: 4px; 
-      }
-      .flash.notice { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-      .flash.alert { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-      .btn { 
-        display: inline-block; 
-        padding: 10px 20px; 
-        background: #007bff; 
-        color: #fff; 
-        text-decoration: none; 
-        border-radius: 4px; 
-        border: none;
-        cursor: pointer;
-      }
-      .btn:hover { background: #0056b3; }
-      .btn-danger { background: #dc3545; }
-      .btn-danger:hover { background: #c82333; }
-      .btn-success { background: #28a745; }
-      .btn-success:hover { background: #218838; }
-      .btn-secondary { background: #6c757d; }
-      .btn-secondary:hover { background: #5a6268; }
-      .card { 
-        background: #fff; 
-        padding: 20px; 
-        margin-bottom: 20px; 
-        border-radius: 8px; 
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      }
-      .grid { 
-        display: grid; 
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
-        gap: 20px; 
-      }
-      form { margin: 20px 0; }
-      .form-group { margin-bottom: 15px; }
-      label { 
-        display: block; 
-        margin-bottom: 5px; 
-        font-weight: bold; 
-      }
-      input[type="text"],
-      input[type="email"],
-      input[type="password"],
-      input[type="date"],
-      input[type="number"],
-      textarea,
-      select {
-        width: 100%;
-        padding: 10px;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-      }
-      textarea { min-height: 100px; }
-      table { 
-        width: 100%; 
-        border-collapse: collapse; 
-        background: #fff;
-      }
-      th, td { 
-        padding: 12px; 
-        text-align: left; 
-        border-bottom: 1px solid #ddd; 
-      }
-   
-
-      th { background: #f8f9fa; font-weight: bold; }
-      thead th {
-  background-color: #f2f2f2;
-}
-
-      .error { color: #dc3545; font-size: 0.9em; }
-      .badge { 
-        display: inline-block; 
-        padding: 4px 8px; 
-        border-radius: 4px; 
-        font-size: 0.85em;
-      }
-      .badge-success { background: #d4edda; color: #155724; }
-      .badge-danger { background: #f8d7da; color: #721c24; }
-      .badge-warning { background: #fff3cd; color: #856404; }
-      .badge-info { background: #d1ecf1; color: #0c5460; }
-      .star-rating { color: #ffc107; }
-  
-      .filter-row {
-        display: flex;
-        align-items: center; /* Keeps everything aligned vertically */
-        gap: 8px;            /* Consistent spacing between elements */
-        width: 100%;
-      }
-
-      .filter-input {
-        height: 38px;        /* Standardized height for inputs and selects */
-        padding: 6px 12px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-      }
-
-     
-
-      .btn {
-        height: 38px;        /* Matches the input height */
-        padding: 0 16px;
-        display: flex;
-        align-items: center;
-        text-decoration: none;
-        white-space: nowrap; /* Prevents button text from wrapping */
-      }
-            /* 1. Fix the Header and Button alignment */
-      .header-section {
-        display: flex;
-        justify-content: space-between; /* Pushes title left, button right */
-        align-items: center;
-        margin-bottom: 20px;
-      }
-
-      /* 2. Prevent the button from stretching */
-      .btn {
-        display: inline-flex; /* Shrinks to fit content */
-        align-items: center;
-        width: auto;          /* Explicitly prevents full-width */
-        white-space: nowrap;  /* Keeps text on one line */
-        padding: 10px 20px;
-        text-decoration: none;
-        border-radius: 6px;
-        font-weight: bold;
-        
-      }
-
-      /* 3. Keep the filter row tight */
-      .filter-row {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-      }
-
-      .search-main {
-        flex-grow: 1;
-        
-      }
-      .mb-20 {
-        margin-bottom: 20px;
-      }
-       .mt-10 {
-        margin-top: 10px;
-      }
-      .pagination-container {
-        margin: 20px 0;
-        display: flex;
-        justify-content: center;
-        gap: 5px;
-      }
-
-      /* Base style for all links and the current page */
-      .pagination-container a, 
-      .pagination-container .current,
-      .pagination-container .page a,
-      .pagination-container .next a,
-      .pagination-container .prev a,
-      .pagination-container .last a,
-      .pagination-container .first a {
-        padding: 8px 16px;
-        border: 1.5px solid #dddddd;
-        text-decoration: none;
-        border-radius: 4px;
-        color: grey;
-        transition: all 0.2s ease-in-out; /* Makes the color change smooth */
-      }
-      td .btn {
-        white-space: nowrap;
-      }
-
-
-      /* Hover state: Change background and make text white */
-      .pagination-container a:hover {
-        background-color: #007bff;
-        border-color: #007bff;
-        color: white !important; /* Forces text to white on hover */
-      }
-
-      /* Current page style */
-      .pagination-container .current {
-        background-color: #007bff;
-        color: white;
-        border-color: #007bff;
-        cursor: default;
-      } 
-      /* Container for the checkbox list */
-      .checkbox-group {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 15px;
-        padding: 10px;
-        border: 1px solid #eee;
-        border-radius: 4px;
-      }
-
-      /* Overriding your global 'label' and 'input' for checkboxes only */
-      .checkbox-item {
-        display: flex;
-        align-items: center;
-        gap: 5px;
-        font-weight: normal; /* Checkbox labels shouldn't usually be bold */
-      }
-
-      .checkbox-item input[type="checkbox"] {
-        width: auto; /* Prevents checkbox from stretching to 100% width */
-        margin-bottom: 0;
-      }
-      .action-buttons {
-        display: flex;      /* Align children (buttons) horizontally */
-        gap: 10px;          /* Creates exactly 10px of space between them */
-        align-items: center; /* Ensures they stay centered vertically */
-      }
-    </style>
   </head>
 
   <body>
     <header>
       <nav>
-        <div>
-          <%= link_to "📚 Library", root_path, style: "font-size: 1.5em; font-weight: bold;" %>
-          <%= link_to "Books", books_path %>
-          <%= link_to "Authors", authors_path %>
-          <%= link_to "Categories", categories_path %>
-        </div>
-        
-        <div>
-          <%= link_to "Dashboard", dashboard_user_path(User.first) if User.any? %>
-          <%= link_to "All Borrowings", borrowings_path %>
-            <%= link_to "Reservations", reservations_path %>
-              <%= link_to "Librarian Dashboard", admin_root_path
- %>
-        </div>
-      </nav>
+      <div>
+        <%= link_to "📚 Library", root_path, style: "font-size: 1.5em; font-weight: bold;" %>
+        <%= link_to "Books", books_path %>
+        <%= link_to "Authors", authors_path %>
+        <%= link_to "Categories", categories_path %>
+      </div>
+
+      <div>
+        <% if member_signed_in? %>
+        <span style="color: #fff; margin-right: 10px;">
+          Hello, <%= current_member.name || current_member.email %>
+        </span>
+        <%= link_to "My Borrowings", borrowings_path %>
+        <%= link_to "My Reservations", reservations_path %>
+        <%= link_to "Logout", destroy_member_session_path,
+                    method: :delete,
+                    data: { turbo_method: :delete } %>
+      <% elsif librarian_signed_in? %>
+        <span style="color: #fff; margin-right: 10px;">
+          Hello, <%= current_librarian.name || current_librarian.email %>
+        </span>
+        <%= link_to "Admin Dashboard", admin_root_path %>
+        <%= link_to "Logout", destroy_librarian_session_path,
+                    method: :delete,
+                    data: { turbo_method: :delete } %>
+      <% else %>
+        <%= link_to "Login", login_path %>
+        <%= link_to "Sign Up", sign_up_path %>
+      <% end %>
+
+      </div>
+    </nav>
+
     </header>
 
     <div class="container">

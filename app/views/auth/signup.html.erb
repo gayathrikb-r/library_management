@@ -1,0 +1,26 @@
+<div class="login-wrapper" data-controller="login-cards">
+  <div class="login-container">
+
+    <h1 class="login-title">Create an Account ✨</h1>
+
+    <div class="login-cards">
+
+      <div class="login-card" data-action="mouseenter->login-cards#highlight mouseleave->login-cards#reset">
+        <h2>👤 Member</h2>
+        <p>Join the library and borrow books</p>
+        <%= link_to "Sign up as Member",
+            new_member_registration_path,
+            class: "btn btn-primary" %>
+      </div>
+
+      <div class="login-card" data-action="mouseenter->login-cards#highlight mouseleave->login-cards#reset">
+        <h2>👨‍💼 Librarian</h2>
+        <p>Manage books, members, and borrowings</p>
+        <%= link_to "Sign up as Librarian",
+            new_librarian_registration_path,
+            class: "btn btn-secondary" %>
+      </div>
+
+    </div>
+  </div>
+</div>

@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "auth/login"
   # Member namespace
   namespace :member do
     get "dashboard/show", to: "dashboard#show", as: :dashboard
@@ -12,6 +13,8 @@ Rails.application.routes.draw do
   # Root
   root "books#index"
 
+  get "/login", to: "auth#login", as: :login
+  get "/sign_up", to: "auth#signup"
   # Devise routes
   devise_for :members, path: "members", controllers: {
     registrations: "members/registrations",

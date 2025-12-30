@@ -1,0 +1,452 @@
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        font-family: Arial, sans-serif; 
+        line-height: 1.6; 
+        background: #f4f4f4;
+      }
+      .container { 
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 20px; 
+      }
+      header { 
+        background: #333; 
+        color: #fff; 
+        padding: 1rem 0; 
+        margin-bottom: 20px;
+      }
+      nav { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        max-width: 1200px; 
+        margin: 0 auto; 
+        padding: 0 20px;
+      }
+      nav a { 
+        color: #fff; 
+        text-decoration: none; 
+        margin: 0 10px; 
+        padding: 5px 10px;
+      }
+      nav a:hover { background: #555; border-radius: 4px; }
+      .flash { 
+        padding: 15px; 
+        margin-bottom: 20px; 
+        border-radius: 4px; 
+      }
+      .flash.notice { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+      .flash.alert { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+      .btn { 
+        display: inline-block; 
+        padding: 10px 20px; 
+        background: #007bff; 
+        color: #fff; 
+        text-decoration: none; 
+        border-radius: 4px; 
+        border: none;
+        cursor: pointer;
+      }
+      .btn:hover { background: #0056b3; }
+      .btn-danger { background: #dc3545; }
+      .btn-danger:hover { background: #c82333; }
+      .btn-success { background: #28a745; }
+      .btn-success:hover { background: #218838; }
+      .btn-secondary { background: #6c757d; }
+      .btn-secondary:hover { background: #5a6268; }
+      .card { 
+        background: #fff; 
+        padding: 20px; 
+        margin-bottom: 20px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      }
+      .grid { 
+        display: grid; 
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); 
+        gap: 20px; 
+      }
+      form { margin: 20px 0; }
+      .form-group { margin-bottom: 15px; }
+      label { 
+        display: block; 
+        margin-bottom: 5px; 
+        font-weight: bold; 
+      }
+      input[type="text"],
+      input[type="email"],
+      input[type="password"],
+      input[type="date"],
+      input[type="number"],
+      textarea,
+      select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      textarea { min-height: 100px; }
+      table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        background: #fff;
+      }
+      th, td { 
+        padding: 12px; 
+        text-align: left; 
+        border-bottom: 1px solid #ddd; 
+      }
+   
+
+      th { background: #f8f9fa; font-weight: bold; }
+      thead th {
+  background-color: #f2f2f2;
+}
+
+      .error { color: #dc3545; font-size: 0.9em; }
+      .badge { 
+        display: inline-block; 
+        padding: 4px 8px; 
+        border-radius: 4px; 
+        font-size: 0.85em;
+      }
+      .badge-success { background: #d4edda; color: #155724; }
+      .badge-danger { background: #f8d7da; color: #721c24; }
+      .badge-warning { background: #fff3cd; color: #856404; }
+      .badge-info { background: #d1ecf1; color: #0c5460; }
+      .star-rating { color: #ffc107; }
+  
+      .filter-row {
+        display: flex;
+        align-items: center; /* Keeps everything aligned vertically */
+        gap: 8px;            /* Consistent spacing between elements */
+        width: 100%;
+      }
+
+      .filter-input {
+        height: 38px;        /* Standardized height for inputs and selects */
+        padding: 6px 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+      }
+
+     
+
+      .btn {
+        height: 38px;        /* Matches the input height */
+        padding: 0 16px;
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        white-space: nowrap; /* Prevents button text from wrapping */
+      }
+            /* 1. Fix the Header and Button alignment */
+      .header-section {
+        display: flex;
+        justify-content: space-between; /* Pushes title left, button right */
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      /* 2. Prevent the button from stretching */
+      .btn {
+        display: inline-flex; /* Shrinks to fit content */
+        align-items: center;
+        width: auto;          /* Explicitly prevents full-width */
+        white-space: nowrap;  /* Keeps text on one line */
+        padding: 10px 20px;
+        text-decoration: none;
+        border-radius: 6px;
+        font-weight: bold;
+        
+      }
+
+      /* 3. Keep the filter row tight */
+      .filter-row {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+
+      .search-main {
+        flex-grow: 1;
+        
+      }
+      .mb-20 {
+        margin-bottom: 20px;
+      }
+       .mt-10 {
+        margin-top: 10px;
+      }
+      .pagination-container {
+        margin: 20px 0;
+        display: flex;
+        justify-content: center;
+        gap: 5px;
+      }
+
+      /* Base style for all links and the current page */
+      .pagination-container a, 
+      .pagination-container .current,
+      .pagination-container .page a,
+      .pagination-container .next a,
+      .pagination-container .prev a,
+      .pagination-container .last a,
+      .pagination-container .first a {
+        padding: 8px 16px;
+        border: 1.5px solid #dddddd;
+        text-decoration: none;
+        border-radius: 4px;
+        color: grey;
+        transition: all 0.2s ease-in-out; /* Makes the color change smooth */
+      }
+      td .btn {
+        white-space: nowrap;
+      }
+
+
+      /* Hover state: Change background and make text white */
+      .pagination-container a:hover {
+        background-color: #007bff;
+        border-color: #007bff;
+        color: white !important; /* Forces text to white on hover */
+      }
+
+      /* Current page style */
+      .pagination-container .current {
+        background-color: #007bff;
+        color: white;
+        border-color: #007bff;
+        cursor: default;
+      } 
+      /* Container for the checkbox list */
+      .checkbox-group {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+        padding: 10px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+      }
+
+      /* Overriding your global 'label' and 'input' for checkboxes only */
+      .checkbox-item {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: normal; /* Checkbox labels shouldn't usually be bold */
+      }
+
+      .checkbox-item input[type="checkbox"] {
+        width: auto; /* Prevents checkbox from stretching to 100% width */
+        margin-bottom: 0;
+      }
+      .action-buttons {
+        display: flex;      /* Align children (buttons) horizontally */
+        gap: 10px;          /* Creates exactly 10px of space between them */
+        align-items: center; /* Ensures they stay centered vertically */
+      }
+      .login-wrapper {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  max-width: 700px;
+  width: 100%;
+  padding: 2rem;
+  text-align: center;
+}
+
+.login-title {
+  margin-bottom: 2rem;
+}
+
+.login-cards {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.login-card {
+  border: 1px solid #ddd;
+  padding: 2rem;
+  border-radius: 1rem;
+  width: 280px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: #fff;
+}
+/* ===== Signup page only ===== */
+
+.auth-signupandlogin {
+  width: 100%;                /* full page width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;        /* center the card horizontally */
+  justify-content: flex-start; /* optional: align top */
+  min-height: 100vh;          /* full viewport height */
+}
+
+
+.auth-signupandlogin .auth-title {
+  text-align: center;
+  font-size: 2rem;
+  margin-bottom: 1.5rem;
+  
+}
+
+.auth-signupandlogin .auth-form {
+  max-width: 420px;
+  width: 100%;        /* fill the parent container */
+  margin: 0 auto;
+  padding: 2rem;
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+}
+
+.auth-signupandlogin .form-group {
+  margin-bottom: 1.25rem;
+}
+
+.auth-signupandlogin label {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 0.3rem;
+}
+
+.auth-signupandlogin .form-control {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+}
+
+.auth-signupandlogin .form-control:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+}
+
+.auth-signupandlogin .hint {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.auth-signupandlogin .btn-primary {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: white;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.auth-signupandlogin .btn-primary:hover {
+  background: #1d4ed8;
+}
+
+.auth-signupandlogin .auth-links {
+  text-align: center;
+  margin-top: 1rem;
+}
+.auth-choice-grid {
+  display: flex;
+  gap: 2rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.auth-choice-card {
+  width: 280px;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.auth-choice-card h2 {
+  margin-bottom: 0.5rem;
+}
+
+.auth-choice-card p {
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 1.25rem;
+}
+
+.btn-secondary {
+   display: inline-flex;  
+  padding: 0.7rem 1.2rem;
+  border-radius: 0.5rem;
+  background: #6b7280;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+.actions-bar {
+  margin: 1.5rem 0;
+}
+
+.book-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.book-title {
+  margin-bottom: 0.5rem;
+}
+
+.book-meta {
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.availability {
+  margin: 0.75rem 0;
+}
+
+.star-rating {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.rating-text {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid #667eea;
+  color: #667eea;
+}
+
+.btn-outline:hover {
+  background: #667eea;
+  color: white;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 2rem;
+}
+
+.muted {
+  color: #777;
+  font-size: 0.9rem;
+}
+

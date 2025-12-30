@@ -1,5 +1,7 @@
 class BooksController < ApplicationController
   before_action :set_book, only: [:show, :edit, :update, :destroy, :borrow, :reserve]
+  before_action :authenticate_librarian!, except: [:index, :show, :borrow, :reserve]
+  before_action :authenticate_member!, only: [:borrow, :reserve]
 
   def index
     @books = Book.includes(:authors, :categories)
