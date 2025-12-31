@@ -9,668 +9,299 @@
 #   end
 # Clear existing data
 # Clear existing data
-puts "🗑️  Clearing database..."
+# Clear existing data (be careful in production!)
+# Clear existing data (be careful in production!)
+puts "🗑️  Cleaning database..."
 Review.destroy_all
 Borrowing.destroy_all
 Reservation.destroy_all
 BookAuthor.destroy_all
 BookCategory.destroy_all
-Profile.destroy_all
-Book.destroy_all
-Author.destroy_all
-Category.destroy_all
-Tag.destroy_all
-User.destroy_all
+MemberCategory.destroy_all
+Book.delete_all
+Author.delete_all
+Category.delete_all
+Tag.delete_all
+Member.delete_all
+Librarian.delete_all
+AdminUser.delete_all
 
-puts "✅ Database cleared!"
-puts "\n" + "="*50
+puts "✅ Database cleaned!"
 
-# Create Users
-puts "👥 Creating users..."
+# Create Admin User
+puts "\n👤 Creating Admin User..."
+AdminUser.create!(
+  email: 'admin@library.com',
+  password: 'password123',
+  password_confirmation: 'password123'
+)
+puts "✅ Admin created: admin@library.com / password123"
 
-librarian = User.create!(
-  name: "Admin Librarian",
-  email: "admin@library.com",
-  password: "password123",
-  password_confirmation: "password123",
-  role: :librarian,
-  phone: "1234567890",
-  membership_date: Date.today - 365.days
+# Create Librarians
+puts "\n📚 Creating Librarians..."
+librarian1 = Librarian.create!(
+  name: 'Sarah Johnson',
+  email: 'sarah@library.com',
+  phone: '9876543210',  # 10 digit phone number
+  password: 'password123',
+  password_confirmation: 'password123'
 )
 
-member1 = User.create!(
-  name: "John Doe",
-  email: "john@example.com",
-  password: "password123",
-  password_confirmation: "password123",
-  role: :member,
-  phone: "9876543210",
-  membership_date: Date.today - 90.days
+librarian2 = Librarian.create!(
+  name: 'Michael Chen',
+  email: 'michael@library.com',
+  phone: '9876543211',  # 10 digit phone number
+  password: 'password123',
+  password_confirmation: 'password123'
 )
-
-member2 = User.create!(
-  name: "Jane Smith",
-  email: "jane@example.com",
-  password: "password123",
-  password_confirmation: "password123",
-  role: :member,
-  phone: "5555555555",
-  membership_date: Date.today - 60.days
-)
-
-member3 = User.create!(
-  name: "Bob Johnson",
-  email: "bob@example.com",
-  password: "password123",
-  password_confirmation: "password123",
-  role: :member,
-  phone: "7778889999",
-  membership_date: Date.today - 30.days
-)
-
-member4 = User.create!(
-  name: "Alice Williams",
-  email: "alice@example.com",
-  password: "password123",
-  password_confirmation: "password123",
-  role: :member,
-  phone: "4445556666",
-  membership_date: Date.today - 15.days
-)
-
-puts "✅ Created #{User.count} users (#{User.librarian.count} librarians, #{User.member.count} members)"
+puts "✅ 2 Librarians created"
 
 # Create Categories
-puts "\n📚 Creating categories..."
-
-fiction = Category.create!(name: "Fiction")
-non_fiction = Category.create!(name: "Non-Fiction")
-mystery = Category.create!(name: "Mystery")
-thriller = Category.create!(name: "Thriller")
-scifi = Category.create!(name: "Science Fiction")
-fantasy = Category.create!(name: "Fantasy")
-romance = Category.create!(name: "Romance")
-biography = Category.create!(name: "Biography")
-history = Category.create!(name: "History")
-self_help = Category.create!(name: "Self Help")
-classic = Category.create!(name: "Classic")
-young_adult = Category.create!(name: "Young Adult")
-horror = Category.create!(name: "Horror")
-poetry = Category.create!(name: "Poetry")
-adventure = Category.create!(name: "Adventure")
-
-puts "✅ Created #{Category.count} categories"
+puts "\n📂 Creating Categories..."
+categories = [
+  'Fiction',
+  'Non-Fiction',
+  'Science Fiction',
+  'Mystery',
+  'Romance',
+  'Biography',
+  'History',
+  'Science',
+  'Technology',
+  'Self-Help'
+].map { |name| Category.create!(name: name) }
+puts "✅ #{categories.count} Categories created"
 
 # Create Tags
-puts "\n🏷️  Creating tags..."
-
-bestseller = Tag.create!(name: "Bestseller")
-award_winner = Tag.create!(name: "Award Winner")
-classic_tag = Tag.create!(name: "Classic")
-new_release = Tag.create!(name: "New Release")
-recommended = Tag.create!(name: "Staff Recommended")
-popular = Tag.create!(name: "Popular")
-limited_edition = Tag.create!(name: "Limited Edition")
-
-puts "✅ Created #{Tag.count} tags"
+puts "\n🏷️  Creating Tags..."
+tags = [
+  'Bestseller',
+  'Award Winner',
+  'Classic',
+  'New Release',
+  'Popular'
+].map { |name| Tag.create!(name: name) }
+puts "✅ #{tags.count} Tags created"
 
 # Create Authors
-puts "\n✍️  Creating authors..."
+puts "\n✍️  Creating Authors..."
+authors = [
+  { name: 'J.K. Rowling', biography: 'British author best known for the Harry Potter series', birth_date: '1965-07-31' },
+  { name: 'George Orwell', biography: 'English novelist and essayist', birth_date: '1903-06-25' },
+  { name: 'Jane Austen', biography: 'English novelist known for romantic fiction', birth_date: '1775-12-16' },
+  { name: 'Stephen King', biography: 'American author of horror and suspense novels', birth_date: '1947-09-21' },
+  { name: 'Agatha Christie', biography: 'English writer known for detective novels', birth_date: '1890-09-15' },
+  { name: 'Isaac Asimov', biography: 'American writer and professor of biochemistry', birth_date: '1920-01-02' },
+  { name: 'Maya Angelou', biography: 'American memoirist, poet, and civil rights activist', birth_date: '1928-04-04' },
+  { name: 'Malcolm Gladwell', biography: 'Canadian journalist and author', birth_date: '1963-09-03' }
+].map { |attrs| Author.create!(attrs) }
+puts "✅ #{authors.count} Authors created"
 
-author1 = Author.create!(
-  name: "J.K. Rowling",
-  biography: "British author, best known for the Harry Potter fantasy series. The books have won multiple awards and sold more than 500 million copies.",
-  birth_date: Date.new(1965, 7, 31)
-)
-
-author2 = Author.create!(
-  name: "George R.R. Martin",
-  biography: "American novelist and short story writer in the fantasy, horror, and science fiction genres. Best known for A Song of Ice and Fire.",
-  birth_date: Date.new(1948, 9, 20)
-)
-
-author3 = Author.create!(
-  name: "Agatha Christie",
-  biography: "English writer known for her 66 detective novels. She is the best-selling novelist of all time.",
-  birth_date: Date.new(1890, 9, 15)
-)
-
-author4 = Author.create!(
-  name: "Isaac Asimov",
-  biography: "American writer and professor of biochemistry, known for his works of science fiction and popular science.",
-  birth_date: Date.new(1920, 1, 2)
-)
-
-author5 = Author.create!(
-  name: "Jane Austen",
-  biography: "English novelist known primarily for her six major novels which critique the British landed gentry.",
-  birth_date: Date.new(1775, 12, 16)
-)
-
-author6 = Author.create!(
-  name: "Stephen King",
-  biography: "American author of horror, supernatural fiction, suspense, crime, science-fiction, and fantasy novels.",
-  birth_date: Date.new(1947, 9, 21)
-)
-
-author7 = Author.create!(
-  name: "Margaret Atwood",
-  biography: "Canadian poet, novelist, literary critic, essayist, teacher, environmental activist, and inventor.",
-  birth_date: Date.new(1939, 11, 18)
-)
-
-author8 = Author.create!(
-  name: "Ernest Hemingway",
-  biography: "American novelist, short-story writer, and journalist. His economical style had a strong influence on 20th-century fiction.",
-  birth_date: Date.new(1899, 7, 21)
-)
-
-author9 = Author.create!(
-  name: "Toni Morrison",
-  biography: "American novelist. Her novels are known for their epic themes, vivid dialogue, and richly detailed African-American characters.",
-  birth_date: Date.new(1931, 2, 18)
-)
-
-author10 = Author.create!(
-  name: "Gabriel García Márquez",
-  biography: "Colombian novelist, short-story writer, screenwriter, and journalist, known as one of the most significant writers of the 20th century.",
-  birth_date: Date.new(1927, 3, 6)
-)
-
-puts "✅ Created #{Author.count} authors"
+# Create Members
+puts "\n👥 Creating Members..."
+10.times do |i|
+  Member.create!(
+    name: "Member #{i+1}",
+    email: "member#{i+1}@example.com",
+    phone: "98765432#{10+i}",  # 10 digit phone numbers
+    bio: "I love reading books and exploring new genres.",
+    birth_date: Date.today - rand(18..80).years,
+    favorite_author: authors.sample,
+    password: 'password123',
+    password_confirmation: 'password123'
+  )
+end
+members = Member.all
+puts "✅ #{members.count} Members created"
 
 # Create Books
-puts "\n📖 Creating books..."
+puts "\n📖 Creating Books..."
+books_data = [
+  { title: "Harry Potter and the Philosopher's Stone", isbn: '9780439708180', year: 1997, copies: 5, author: authors[0], categories: [categories[0], categories[2]], description: "A young wizard discovers his magical heritage on his eleventh birthday." },
+  { title: "1984", isbn: '9780451524935', year: 1949, copies: 4, author: authors[1], categories: [categories[0], categories[2]], description: "A dystopian social science fiction novel and cautionary tale." },
+  { title: "Pride and Prejudice", isbn: '9780141439518', year: 1813, copies: 3, author: authors[2], categories: [categories[0], categories[4]], description: "A romantic novel of manners set in Georgian England." },
+  { title: "The Shining", isbn: '9780385121675', year: 1977, copies: 4, author: authors[3], categories: [categories[0], categories[3]], description: "A horror novel about a family isolated in a haunted hotel." },
+  { title: "Murder on the Orient Express", isbn: '9780062693662', year: 1934, copies: 3, author: authors[4], categories: [categories[0], categories[3]], description: "A detective novel featuring the famous Hercule Poirot." },
+  { title: "Foundation", isbn: '9780553293357', year: 1951, copies: 3, author: authors[5], categories: [categories[2], categories[7]], description: "A science fiction novel about the fall and rise of galactic empires." },
+  { title: "I Know Why the Caged Bird Sings", isbn: '9780345514400', year: 1969, copies: 2, author: authors[6], categories: [categories[5], categories[1]], description: "An autobiography describing the early years of American writer and poet." },
+  { title: "Outliers", isbn: '9780316017930', year: 2008, copies: 4, author: authors[7], categories: [categories[1], categories[9]], description: "An examination of the factors that contribute to high levels of success." },
+  { title: "The Stand", isbn: '9780307743688', year: 1978, copies: 3, author: authors[3], categories: [categories[0], categories[6]], description: "A post-apocalyptic horror/fantasy novel about the survivors of a plague." },
+  { title: "Emma", isbn: '9780141439587', year: 1815, copies: 2, author: authors[2], categories: [categories[0], categories[4]], description: "A novel about youthful hubris and romantic misunderstandings." }
+]
 
-book1 = Book.create!(
-  title: "Harry Potter and the Philosopher's Stone",
-  isbn: "9780747532699",
-  publication_year: 1997,
-  total_copies: 8,
-  available_copies: 5,
-  description: "Harry Potter has never even heard of Hogwarts when the letters start dropping on the doormat at number four, Privet Drive. Young Harry discovers he is a wizard and begins his magical education."
-)
-book1.authors << author1
-book1.categories << [ fiction, fantasy, young_adult ]
-book1.tags << [ bestseller, recommended, popular ]
+books_data.each do |book_data|
+  book = Book.create!(
+    title: book_data[:title],
+    isbn: book_data[:isbn],
+    publication_year: book_data[:year],
+    total_copies: book_data[:copies],
+    available_copies: book_data[:copies],
+    description: book_data[:description]
+  )
+  
+  # Add author
+  BookAuthor.create!(book: book, author: book_data[:author])
+  
+  # Add categories
+  book_data[:categories].each do |category|
+    BookCategory.create!(book: book, category: category)
+  end
+  
+  # Add random tags
+  book.tags << tags.sample(rand(1..3))
+end
 
-book2 = Book.create!(
-  title: "Harry Potter and the Chamber of Secrets",
-  isbn: "9780747538493",
-  publication_year: 1998,
-  total_copies: 6,
-  available_copies: 6,
-  description: "The Dursleys were so mean and hideous that summer that all Harry Potter wanted was to get back to the Hogwarts School for Witchcraft and Wizardry."
-)
-book2.authors << author1
-book2.categories << [ fiction, fantasy, young_adult ]
-book2.tags << [ bestseller, popular ]
+books = Book.all
+puts "✅ #{books.count} Books created"
+puts "\n📚 Creating Borrowings..."
 
-book3 = Book.create!(
-  title: "A Game of Thrones",
-  isbn: "9780553103540",
-  publication_year: 1996,
-  total_copies: 5,
-  available_copies: 2,
-  description: "The first book in the epic fantasy series A Song of Ice and Fire. Winter is coming to the Seven Kingdoms."
-)
-book3.authors << author2
-book3.categories << [ fiction, fantasy, adventure ]
-book3.tags << [ bestseller, award_winner, recommended ]
+# -------------------------------
+# 1️⃣ Overdue borrowings
+# -------------------------------
+3.times do
+  book = books.sample
+  next if book.total_copies <= 0 # just to avoid negative numbers
 
-book4 = Book.create!(
-  title: "Murder on the Orient Express",
-  isbn: "9780062693662",
-  publication_year: 1934,
-  total_copies: 4,
-  available_copies: 4,
-  description: "Just after midnight, a snowdrift stops the Orient Express in its tracks. The luxurious train is surprisingly full, but by morning one passenger is dead."
-)
-book4.authors << author3
-book4.categories << [ fiction, mystery, classic ]
-book4.tags << [ classic_tag, recommended ]
+  Borrowing.new(
+    member: members.sample,
+    book: book,
+    librarian: [librarian1, librarian2].sample,
+    borrowed_date: rand(25..40).days.ago.to_date,
+    due_date: rand(10..15).days.ago.to_date,
+    status: :overdue
+  ).save!(validate: false)  # skip validations
+  book.decrement!(:available_copies)
+end
 
-book5 = Book.create!(
-  title: "And Then There Were None",
-  isbn: "9780062073488",
-  publication_year: 1939,
-  total_copies: 4,
-  available_copies: 0,
-  description: "Ten strangers are lured to an isolated island mansion off the Devon coast. One by one, they are murdered according to a nursery rhyme."
-)
-book5.authors << author3
-book5.categories << [ fiction, mystery, thriller ]
-book5.tags << [ classic_tag, bestseller ]
+# -------------------------------
+# 2️⃣ Returned borrowings
+# -------------------------------
+7.times do
+  book = books.sample
+  Borrowing.new(
+    member: members.sample,
+    book: book,
+    librarian: [librarian1, librarian2].sample,
+    borrowed_date: rand(30..60).days.ago.to_date,
+    due_date: rand(15..25).days.ago.to_date,
+    returned_date: rand(1..10).days.ago.to_date,
+    status: :returned
+  ).save!(validate: false)
+end
 
-book6 = Book.create!(
-  title: "Foundation",
-  isbn: "9780553293357",
-  publication_year: 1951,
-  total_copies: 5,
-  available_copies: 5,
-  description: "The first novel in Isaac Asimov's classic science-fiction masterpiece, the Foundation series."
-)
-book6.authors << author4
-book6.categories << [ fiction, scifi ]
-book6.tags << [ classic_tag, award_winner ]
+# -------------------------------
+# 3️⃣ Active borrowings
+# -------------------------------
+5.times do
+  book = books.sample
+  next if book.available_copies <= 0
 
-book7 = Book.create!(
-  title: "Pride and Prejudice",
-  isbn: "9780141439518",
-  publication_year: 1813,
-  total_copies: 7,
-  available_copies: 4,
-  description: "A romantic novel of manners that follows the character development of Elizabeth Bennet, the protagonist."
-)
-book7.authors << author5
-book7.categories << [ fiction, romance, classic ]
-book7.tags << [ classic_tag, recommended, popular ]
+  Borrowing.create!(
+    member: members.sample,
+    book: book,
+    librarian: [librarian1, librarian2].sample,
+    borrowed_date: rand(1..20).days.ago.to_date,
+    due_date: rand(1..10).days.from_now.to_date,
+    status: :borrowed
+  )
+  book.decrement!(:available_copies)
+end
 
-book8 = Book.create!(
-  title: "The Shining",
-  isbn: "9780307743657",
-  publication_year: 1977,
-  total_copies: 4,
-  available_copies: 3,
-  description: "Jack Torrance's new job at the Overlook Hotel is the perfect chance for a fresh start. But the hotel has a dark history."
-)
-book8.authors << author6
-book8.categories << [ fiction, horror, thriller ]
-book8.tags << [ bestseller, popular ]
-
-book9 = Book.create!(
-  title: "The Handmaid's Tale",
-  isbn: "9780385490818",
-  publication_year: 1985,
-  total_copies: 6,
-  available_copies: 3,
-  description: "Offred is a Handmaid in the Republic of Gilead. She may leave the home of the Commander once a day to walk to food markets."
-)
-book9.authors << author7
-book9.categories << [ fiction, scifi, classic ]
-book9.tags << [ award_winner, bestseller, recommended ]
-
-book10 = Book.create!(
-  title: "The Old Man and the Sea",
-  isbn: "9780684801223",
-  publication_year: 1952,
-  total_copies: 5,
-  available_copies: 5,
-  description: "The story of Santiago, an aging Cuban fisherman who struggles with a giant marlin far out in the Gulf Stream."
-)
-book10.authors << author8
-book10.categories << [ fiction, classic, adventure ]
-book10.tags << [ classic_tag, award_winner ]
-
-book11 = Book.create!(
-  title: "Beloved",
-  isbn: "9781400033416",
-  publication_year: 1987,
-  total_copies: 4,
-  available_copies: 4,
-  description: "Sethe, a former slave, lives in Ohio after the Civil War. She is haunted by the ghost of her dead daughter."
-)
-book11.authors << author9
-book11.categories << [ fiction, history, classic ]
-book11.tags << [ award_winner, classic_tag ]
-
-book12 = Book.create!(
-  title: "One Hundred Years of Solitude",
-  isbn: "9780060883287",
-  publication_year: 1967,
-  total_copies: 5,
-  available_copies: 2,
-  description: "The story of the Buendía family over seven generations in the fictional town of Macondo."
-)
-book12.authors << author10
-book12.categories << [ fiction, classic ]
-book12.tags << [ classic_tag, award_winner, recommended ]
-
-book13 = Book.create!(
-  title: "It",
-  isbn: "9781501142970",
-  publication_year: 1986,
-  total_copies: 6,
-  available_copies: 1,
-  description: "Welcome to Derry, Maine. It's a small city, a place as hauntingly familiar as your own hometown."
-)
-book13.authors << author6
-book13.categories << [ fiction, horror ]
-book13.tags << [ bestseller, popular ]
-
-book14 = Book.create!(
-  title: "Sense and Sensibility",
-  isbn: "9780141439662",
-  publication_year: 1811,
-  total_copies: 4,
-  available_copies: 3,
-  description: "The story of the Dashwood sisters, who must find new housing and new husbands after their father's death."
-)
-book14.authors << author5
-book14.categories << [ fiction, romance, classic ]
-book14.tags << [ classic_tag ]
-
-book15 = Book.create!(
-  title: "A Clash of Kings",
-  isbn: "9780553108033",
-  publication_year: 1998,
-  total_copies: 4,
-  available_copies: 0,
-  description: "The second book in A Song of Ice and Fire. The war continues as five kings claim the Iron Throne."
-)
-book15.authors << author2
-book15.categories << [ fiction, fantasy ]
-book15.tags << [ bestseller, popular ]
-
-puts "✅ Created #{Book.count} books"
-
-# Create Borrowings
-puts "\n📋 Creating borrowings..."
-
-# Returned borrowings first
-Borrowing.create!(
-  user: member1,
-  book: book4,
-  borrowed_date: Date.today - 40.days,
-  due_date: Date.today - 26.days,
-  returned_date: Date.today - 28.days,
-  status: 'returned'
-)
-
-Borrowing.create!(
-  user: member2,
-  book: book6,
-  borrowed_date: Date.today - 35.days,
-  due_date: Date.today - 21.days,
-  returned_date: Date.today - 20.days,
-  status: 'returned'
-)
-
-Borrowing.create!(
-  user: member3,
-  book: book10,
-  borrowed_date: Date.today - 50.days,
-  due_date: Date.today - 36.days,
-  returned_date: Date.today - 34.days,
-  status: 'returned'
-)
-
-# Active borrowings for users without overdue books
-Borrowing.create!(
-  user: member1,
-  book: book1,
-  borrowed_date: Date.today - 5.days,
-  due_date: Date.today + 9.days,
-  status: 'active'
-)
-
-Borrowing.create!(
-  user: member1,
-  book: book3,
-  borrowed_date: Date.today - 3.days,
-  due_date: Date.today + 11.days,
-  status: 'active'
-)
-
-Borrowing.create!(
-  user: member4,
-  book: book8,
-  borrowed_date: Date.today - 1.day,
-  due_date: Date.today + 13.days,
-  status: 'active'
-)
-
-# Overdue borrowings (bypass validation)
-Borrowing.new(
-  user: member2,
-  book: book12,
-  borrowed_date: Date.today - 25.days,
-  due_date: Date.today - 11.days,
-  status: 'overdue'
-).save!(validate: false)
-
-Borrowing.new(
-  user: member3,
-  book: book13,
-  borrowed_date: Date.today - 30.days,
-  due_date: Date.today - 16.days,
-  status: 'overdue'
-).save!(validate: false)
-
-puts "✅ Created #{Borrowing.count} borrowings (#{Borrowing.active.count} active, #{Borrowing.overdue.count} overdue, #{Borrowing.returned.count} returned)"
+puts "✅ #{Borrowing.count} Borrowings created"
 
 # Create Reservations
-puts "\n🔖 Creating reservations..."
+puts "\n📋 Creating Reservations..."
 
-Reservation.create!(
-  user: member1,
-  book: book5,
-  reservation_date: Date.today - 3.days,
-  status: 'pending'
-)
+# -------------------------------
+# Pending reservations
+# -------------------------------
+4.times do
+  book = books.sample
+  next if book.total_copies <= 0
 
-Reservation.create!(
-  user: member2,
-  book: book5,
-  reservation_date: Date.today - 1.day,
-  status: 'pending'
-)
+  Reservation.new(
+    member: members.sample,
+    book: book,
+    reservation_date: Date.today,
+    expires_at: 7.days.from_now,
+    status: :pending
+  ).save!(validate: false) # skip validations
+end
 
-Reservation.create!(
-  user: member4,
-  book: book15,
-  reservation_date: Date.today - 2.days,
-  status: 'pending'
-)
+# -------------------------------
+# Fulfilled reservations
+# -------------------------------
+2.times do
+  book = books.sample
+  Reservation.new(
+    member: members.sample,
+    book: book,
+    reservation_date: 5.days.ago.to_date,
+    notified_at: 3.days.ago,
+    expires_at: 4.days.from_now,
+    status: :fulfilled
+  ).save!(validate: false) # skip validations
+end
 
-Reservation.create!(
-  user: member3,
-  book: book15,
-  reservation_date: Date.today,
-  status: 'pending'
-)
 
-puts "✅ Created #{Reservation.count} reservations"
+puts "✅ #{Reservation.count} Reservations created"
 
 # Create Reviews
-puts "\n⭐ Creating reviews..."
+puts "\n⭐ Creating Reviews..."
 
-# Book reviews
-Review.create!(
-  user: member1,
-  reviewable: book1,
-  rating: 5,
-  comment: "Absolutely magical! This book started my love for the Harry Potter series. The world-building is incredible and the characters are so well-developed.",
-  status: 'approved'
-)
+# Approved reviews
+books.sample(8).each do |book|
+  Review.create!(
+    reviewer: members.sample,
+    reviewable: book,
+    rating: rand(3..5),
+    comment: "This book was #{['amazing', 'fantastic', 'great', 'wonderful', 'excellent'].sample}! I really enjoyed reading it and would recommend it to others.",
+    status: :approved
+  )
+end
 
-Review.create!(
-  user: member2,
-  reviewable: book1,
-  rating: 5,
-  comment: "A timeless classic that appeals to both children and adults. J.K. Rowling's imagination knows no bounds!",
-  status: 'approved'
-)
+# Pending reviews
+books.sample(3).each do |book|
+  Review.create!(
+    reviewer: members.sample,
+    reviewable: book,
+    rating: rand(3..5),
+    comment: "A #{['good', 'solid', 'decent', 'interesting'].sample} read. I found it engaging and worth my time.",
+    status: :pending
+  )
+end
 
-Review.create!(
-  user: member3,
-  reviewable: book1,
-  rating: 4,
-  comment: "Great introduction to the wizarding world. Highly recommended for fantasy lovers.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member1,
-  reviewable: book3,
-  rating: 5,
-  comment: "George R.R. Martin weaves an incredibly complex and engaging story. The characters are morally grey and realistic.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member4,
-  reviewable: book3,
-  rating: 4,
-  comment: "Epic fantasy at its finest. Be prepared for a long journey with multiple perspectives.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member2,
-  reviewable: book7,
-  rating: 5,
-  comment: "Jane Austen's wit and social commentary are timeless. Elizabeth Bennet is one of literature's greatest heroines.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member3,
-  reviewable: book9,
-  rating: 5,
-  comment: "A haunting and powerful dystopian novel that feels more relevant than ever.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member1,
-  reviewable: book4,
-  rating: 5,
-  comment: "Agatha Christie at her best! The twist ending is absolutely brilliant.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member4,
-  reviewable: book8,
-  rating: 5,
-  comment: "Genuinely terrifying! Stephen King's mastery of psychological horror is on full display.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member2,
-  reviewable: book12,
-  rating: 5,
-  comment: "A masterpiece of magical realism. García Márquez's prose is beautiful and dreamlike.",
-  status: 'approved'
-)
-
-# Author reviews
-Review.create!(
-  user: member1,
-  reviewable: author1,
-  rating: 5,
-  comment: "J.K. Rowling created a world that has touched millions of hearts. An incredible storyteller!",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member2,
-  reviewable: author3,
-  rating: 5,
-  comment: "The Queen of Mystery! No one writes detective fiction like Agatha Christie.",
-  status: 'approved'
-)
-
-Review.create!(
-  user: member3,
-  reviewable: author6,
-  rating: 5,
-  comment: "Stephen King is the master of horror. His ability to create atmosphere is unmatched.",
-  status: 'approved'
-)
-
-# Pending review (for testing approval)
-Review.create!(
-  user: member4,
-  reviewable: book6,
-  rating: 4,
-  comment: "Great science fiction foundation. Asimov's ideas are ahead of his time.",
-  status: 'pending'
-)
-
-puts "✅ Created #{Review.count} reviews (#{Review.approved.count} approved, #{Review.pending.count} pending)"
+puts "✅ #{Review.count} Reviews created"
 
 # Update book ratings
-puts "\n📊 Updating book ratings..."
-Book.find_each(&:update_average_rating!)
-puts "✅ Book ratings updated"
-
-# Update Profiles
-puts "\n👤 Creating user profiles..."
-
-member1.profile.update(
-  bio: "Avid reader and fantasy enthusiast. Love getting lost in magical worlds!",
-  birth_date: Date.new(1990, 5, 15),
-  liked_genres: [ "Fiction", "Fantasy", "Young Adult" ],
-  favorite_author: author1
-)
-
-member2.profile.update(
-  bio: "Classic literature lover. Jane Austen and Agatha Christie are my favorites.",
-  birth_date: Date.new(1985, 8, 22),
-  liked_genres: [ "Classic", "Mystery", "Romance" ],
-  favorite_author: author5
-)
-
-member3.profile.update(
-  bio: "Horror and thriller fan. Stephen King keeps me up at night!",
-  birth_date: Date.new(1992, 11, 3),
-  liked_genres: [ "Horror", "Thriller", "Mystery" ],
-  favorite_author: author6
-)
-
-member4.profile.update(
-  bio: "Sci-fi and dystopian fiction reader. Always looking for thought-provoking books.",
-  birth_date: Date.new(1988, 3, 30),
-  liked_genres: [ "Science Fiction", "Fiction" ],
-  favorite_author: author7
-)
-
-librarian.profile.update(
-  bio: "Library administrator with a passion for connecting readers with great books.",
-  birth_date: Date.new(1980, 1, 10),
-  liked_genres: [ "Biography", "History", "Non-Fiction" ],
-  favorite_author: author8
-)
-
-puts "✅ User profiles updated"
-
-# Print Summary
-puts "\n" + "="*50
-puts "🎉 SEED DATA COMPLETED SUCCESSFULLY!"
-puts "="*50
-
-puts "\n📊 DATABASE SUMMARY:"
-puts "-" * 50
-puts "👥 Users:          #{User.count} (#{User.librarian.count} librarians, #{User.member.count} members)"
-puts "📚 Categories:     #{Category.count}"
-puts "🏷️  Tags:          #{Tag.count}"
-puts "✍️  Authors:        #{Author.count}"
-puts "📖 Books:          #{Book.count}"
-puts "📋 Borrowings:     #{Borrowing.count}"
-puts "   - Active:       #{Borrowing.active.count}"
-puts "   - Overdue:      #{Borrowing.overdue.count}"
-puts "   - Returned:     #{Borrowing.returned.count}"
-puts "🔖 Reservations:   #{Reservation.count}"
-puts "⭐ Reviews:        #{Review.count}"
-puts "   - Approved:     #{Review.approved.count}"
-puts "   - Pending:      #{Review.pending.count}"
-puts "-" * 50
-
-puts "\n🔐 TEST ACCOUNTS:"
-puts "-" * 50
-puts "Librarian: admin@library.com / password123"
-puts "Member 1:  john@example.com / password123"
-puts "Member 2:  jane@example.com / password123"
-puts "Member 3:  bob@example.com / password123"
-puts "Member 4:  alice@example.com / password123"
-puts "-" * 50
-
-puts "\n📚 POPULAR BOOKS:"
-puts "-" * 50
-Book.order(reviews_count: :desc).limit(5).each_with_index do |book, index|
-  puts "#{index + 1}. #{book.title} (#{book.reviews_count} reviews, #{book.average_rating&.round(1)}/5 ⭐)"
+Book.find_each do |book|
+  approved_reviews = book.reviews.approved
+  if approved_reviews.any?
+    book.update!(
+      average_rating: approved_reviews.average(:rating).round(2),
+      reviews_count: approved_reviews.count
+    )
+  end
 end
-puts "-" * 50
+
+puts "\n" + "="*50
+puts "🎉 SEED COMPLETED!"
+puts "="*50
+puts "\n📊 Summary:"
+puts "  • Admin Users: #{AdminUser.count}"
+puts "  • Librarians: #{Librarian.count}"
+puts "  • Members: #{Member.count}"
+puts "  • Authors: #{Author.count}"
+puts "  • Categories: #{Category.count}"
+puts "  • Tags: #{Tag.count}"
+puts "  • Books: #{Book.count}"
+puts "  • Borrowings: #{Borrowing.count}"
+puts "  • Reservations: #{Reservation.count}"
+puts "  • Reviews: #{Review.count}"
+puts "\n🔑 Login Credentials:"
+puts "  Admin:     admin@library.com / password123"
+puts "  Librarian: sarah@library.com / password123"
+puts "  Librarian: michael@library.com / password123"
+puts "  Members:   member1@example.com (through member10@example.com) / password123"
+puts "\n✅ All set! Start your Rails server and log in!"
+puts "="*50
