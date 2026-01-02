@@ -1,9 +1,14 @@
 Rails.application.routes.draw do
+  devise_for :admin_users, ActiveAdmin::Devise.config
   get "auth/login"
   # Member namespace
   namespace :member do
     get "dashboard/show", to: "dashboard#show", as: :dashboard
   end
+  namespace :librarians do
+    get "dashboard", to: "dashboard#index", as: :dashboard
+  end
+
 
   # Health check & PWA
   get "up" => "rails/health#show", as: :rails_health_check
@@ -24,7 +29,7 @@ Rails.application.routes.draw do
   devise_for :librarians, path: "librarians", controllers: {
     registrations: "librarians/registrations",
     sessions: "librarians/sessions"
-  }
+  }, skip: [:registrations] # prevent librarians from signing up
 
   # Books, authors, categories
   resources :books do
@@ -32,11 +37,11 @@ Rails.application.routes.draw do
       post :borrow
       post :reserve
     end
-    resources :reviews, only: [:create, :edit, :update, :destroy]
+    resources :reviews, only: [:create]
   end
 
   resources :authors do
-    resources :reviews, only: [:create, :edit, :update, :destroy]
+    resources :reviews, only: [:create]
   end
 
   resources :categories
@@ -49,15 +54,15 @@ Rails.application.routes.draw do
   resources :reservations, only: [:index, :show, :create] do
     member { patch :cancel }
   end
+  resources :members, only: [:show,:edit,:update]
 
   # Reviews actions
-  resources :reviews, only: [] do
-    member { patch :flag }
+  resources :reviews, only: [:edit, :update, :destroy] do
+    member do
+      patch :flag     # members
+      patch :approve  # librarians
+    end
   end
 
-  # Admin namespace handled by ActiveAdmin
-  namespace :admin do
-    root to: "dashboard#index" # ActiveAdmin default dashboard
-    # ActiveAdmin resources (will be registered in app/admin/*)
-  end
+  ActiveAdmin.routes(self)
 end

@@ -18,7 +18,7 @@ class Review < ApplicationRecord
   after_destroy :update_reviewable_rating
 
   scope :recent, -> { order(created_at: :desc) }
-
+  scope :pending_first, -> { order(status: :asc, created_at: :desc) }
   def approve!
     approved!
   end

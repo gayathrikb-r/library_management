@@ -1,2 +1,27 @@
-<h1>Reviews#edit</h1>
-<p>Find me in app/views/reviews/edit.html.erb</p>
+<div class="card">
+  <h1>Edit Your Review</h1>
+
+  <%= form_with model: [@reviewable, @review], local: true do |f| %>
+    <div class="form-group">
+      <%= f.label :rating, "Rating (1–5 stars)" %>
+      <%= f.select :rating,
+            (1..5).to_a.reverse,
+            {},
+            class: "form-control",
+            required: true %>
+    </div>
+
+    <div class="form-group">
+      <%= f.label :comment, "Your Review" %>
+      <%= f.text_area :comment,
+            rows: 4,
+            class: "form-control",
+            required: true %>
+    </div>
+
+    <div class="actions">
+      <%= f.submit "Update Review", class: "btn btn-success" %>
+      <%= link_to "Cancel", @reviewable, class: "btn btn-secondary" %>
+    </div>
+  <% end %>
+</div>

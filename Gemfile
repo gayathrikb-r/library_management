@@ -59,3 +59,8 @@ end
 
 gem "dotenv-rails", "~> 3.2", group: :development
 gem "test", "~> 1.0", group: :development
+
+gem "activeadmin", "~> 3.4"
+gem "sassc-rails"
+# Gemfile
+gem 'faker'

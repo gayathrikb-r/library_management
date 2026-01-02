@@ -1,2 +1,42 @@
-<h1>Members#edit</h1>
-<p>Find me in app/views/members/edit.html.erb</p>
+<h1>✏️ Edit Profile</h1>
+<% if @member.errors.any? %>
+  <div class="flash alert">
+    <h4><%= pluralize(@member.errors.count, "error") %> prohibited this profile from being saved:</h4>
+    <ul>
+      <% @member.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  </div>
+<% end %>
+
+<div class="card">
+  <%= form_with model: @member, local: true do |f| %>
+
+    <div class="field">
+      <%= f.label :name %>
+      <%= f.text_field :name, required: true %>
+    </div>
+
+    <div class="field">
+      <%= f.label :phone %>
+      <%= f.text_field :phone %>
+    </div>
+
+    <div class="field">
+      <%= f.label :bio %>
+      <%= f.text_area :bio, rows: 4 %>
+    </div>
+
+    <div class="field">
+      <%= f.label :birth_date %>
+      <%= f.date_field :birth_date %>
+    </div>
+
+    <div style="margin-top: 10px;">
+      <%= f.submit "Save Changes", class: "btn btn-success" %>
+      <%= link_to "Cancel", member_path(@member), class: "btn btn-secondary" %>
+    </div>
+
+  <% end %>
+</div>

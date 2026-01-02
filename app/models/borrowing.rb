@@ -14,13 +14,18 @@ class Borrowing < ApplicationRecord
 
   # Callbacks
   before_validation :set_dates, on: :create
-  before_validation :check_if_overdue, on: :create
+  before_validation :check_if_overdue
   after_create :decrease_book_availability
   after_update :increase_book_availability, if: :returned_now?
   after_update :notify_next_reservation, if: :returned_now?
 
   # Scopes
   scope :active, -> { borrowed }
+  scope :returned, -> { returned }
+  scope :overdue, -> {
+  where(status: :overdue)
+    .or(where(status: :borrowed).where("due_date < ?", Date.today))
+}
   scope :for_member, ->(member) { where(member: member) }
   scope :for_book, ->(book) { where(book: book) }
   scope :due_soon, -> { borrowed.where("due_date <= ?", 3.days.from_now) }
@@ -34,6 +39,10 @@ class Borrowing < ApplicationRecord
     return 0 unless overdue?
     (Date.today - due_date).to_i
   end
+  def active?
+  borrowed?
+  end
+
 
   def calculate_fine
     days_overdue * FINE_PER_DAY

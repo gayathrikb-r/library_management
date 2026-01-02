@@ -1,23 +1,35 @@
 <h1>📖 Borrowings</h1>
 
-<% if  librarian_signed_in? %>
-  <div class="card">
+<% if librarian_signed_in? %>
+  <div class="card" style="margin-bottom: 15px;">
     <div style="display: flex; gap: 10px;">
-      <%= link_to "All", borrowings_path, class: "btn #{params[:filter].nil? ? 'btn-success' : ''}" %>
-      <%= link_to "Active", borrowings_path(filter: 'active'), class: "btn #{params[:filter] == 'active' ? 'btn-success' : ''}" %>
-      <%= link_to "Overdue", borrowings_path(filter: 'overdue'), class: "btn #{params[:filter] == 'overdue' ? 'btn-success' : ''}" %>
-      <%= link_to "Returned", borrowings_path(filter: 'returned'), class: "btn #{params[:filter] == 'returned' ? 'btn-success' : ''}" %>
+      <%= link_to "All",
+          borrowings_path(member_id: params[:member_id]),
+          class: "btn #{params[:filter].nil? ? 'btn-success' : ''}" %>
+
+      <%= link_to "Active",
+          borrowings_path(filter: 'active', member_id: params[:member_id]),
+          class: "btn #{params[:filter] == 'active' ? 'btn-success' : ''}" %>
+
+      <%= link_to "Overdue",
+          borrowings_path(filter: 'overdue', member_id: params[:member_id]),
+          class: "btn #{params[:filter] == 'overdue' ? 'btn-success' : ''}" %>
+
+      <%= link_to "Returned",
+          borrowings_path(filter: 'returned', member_id: params[:member_id]),
+          class: "btn #{params[:filter] == 'returned' ? 'btn-success' : ''}" %>
     </div>
   </div>
 <% end %>
 
+
 <div class="card">
   <% if @borrowings.any? %>
-    <table>
+    <table class="table table-striped">
       <thead>
         <tr>
           <% if librarian_signed_in? %>
-            <th>User</th>
+            <th>Member</th>
           <% end %>
           <th>Book</th>
           <th>Borrowed Date</th>
@@ -30,35 +42,36 @@
       <tbody>
         <% @borrowings.each do |borrowing| %>
           <tr>
-            <% if  librarian_signed_in? %>
-              <td><%= link_to borrowing.user.name, borrowing.user %></td>
+            <% if librarian_signed_in? %>
+              <td><%= link_to borrowing.member.name, member_path(borrowing.member) %></td>
             <% end %>
+
             <td><%= link_to borrowing.book.title, borrowing.book %></td>
             <td><%= borrowing.borrowed_date.strftime("%b %d, %Y") %></td>
             <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
             <td><%= borrowing.returned_date&.strftime("%b %d, %Y") || "Not returned" %></td>
             <td>
-              <% if borrowing.status == 'returned' %>
+              <% case borrowing.status %>
+              <% when "returned" %>
                 <span class="badge badge-success">Returned</span>
-              <% elsif borrowing.status == 'overdue' %>
+              <% when "overdue" %>
                 <span class="badge badge-danger">Overdue (<%= borrowing.days_overdue %> days)</span>
               <% else %>
                 <span class="badge badge-info">Active</span>
               <% end %>
             </td>
-          <td>
-            <div class="action-buttons">
-              <%= link_to "Details", borrowing_path(borrowing), class: "btn btn-secondary" %>
-              
-              <% if borrowing.status != 'returned' %>
-                <%= link_to "Return", 
-                    return_book_borrowing_path(borrowing), 
-                    data: { turbo_method: :patch, turbo_confirm: "Mark this book as returned?" }, 
-                    class: "btn btn-success" %>
-              <% end %>
-            </div>
-          </td>
-      
+            <td>
+              <div class="action-buttons" style="display: flex; gap: 5px;">
+                <%= link_to "Details", borrowing_path(borrowing), class: "btn btn-secondary btn-sm" %>
+
+                <% if librarian_signed_in? && borrowing.returned_date.nil? %>
+                  <%= link_to "Return",
+                      return_book_borrowing_path(borrowing),
+                      data: { turbo_method: :patch, turbo_confirm: "Mark this book as returned?" },
+                      class: "btn btn-success btn-sm" %>
+                <% end %>
+              </div>
+            </td>
           </tr>
         <% end %>
       </tbody>

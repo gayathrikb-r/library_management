@@ -1,2 +1,46 @@
-<h1>Members#show</h1>
-<p>Find me in app/views/members/show.html.erb</p>
+<h1>👤 My Profile</h1>
+
+<div class="card">
+  <p><strong>Name:</strong> <%= @member.name %></p>
+  <p><strong>Email:</strong> <%= @member.email %></p>
+  <p><strong>Phone:</strong> <%= @member.phone.presence || "—" %></p>
+  <p><strong>Bio:</strong> <%= @member.bio.presence || "—" %></p>
+  <p><strong>Birth Date:</strong> <%= @member.birth_date || "—" %></p>
+
+  <% if member_signed_in? && @member == current_member %>
+    <%= link_to "Edit Profile",
+        edit_member_path(@member),
+        class: "btn btn-primary" %>
+  <% end %>
+</div>
+<!-- LIBRARIAN VIEW -->
+<% if librarian_signed_in? %>
+  <div class="card">
+    <h3>📊 Library Activity</h3>
+
+    <p>
+      <strong>Total Borrowings:</strong>
+      <%= @member.borrowings.count %>
+    </p>
+
+    <p>
+      <strong>Active Borrowings:</strong>
+      <%= @member.borrowings.active.count %>
+    </p>
+
+    <p>
+      <strong>Overdue Borrowings:</strong>
+      <%= @member.borrowings.overdue.count %>
+    </p>
+
+    <%= link_to "View Borrowings",
+        borrowings_path(member_id: @member.id),
+        class: "btn btn-secondary" %>
+  </div>
+<% end %>
+
+<div style="margin-top: 15px;">
+  <%= link_to "⬅ Back",
+     root_path,
+      class: "btn btn-light" %>
+</div>

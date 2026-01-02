@@ -5,41 +5,43 @@
     <h3>Total Books</h3>
     <p style="font-size: 2em; font-weight: bold; color: #007bff;"><%= @total_books %></p>
   </div>
-  
+
   <div class="card">
-    <h3>Total Users</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #28a745;"><%= @total_users %></p>
+    <h3>Total Members</h3>
+    <p style="font-size: 2em; font-weight: bold; color: #28a745;"><%= @total_members %></p>
   </div>
-  
+
   <div class="card">
     <h3>Active Borrowings</h3>
     <p style="font-size: 2em; font-weight: bold; color: #17a2b8;"><%= @active_borrowings %></p>
   </div>
-  
+
   <div class="card">
     <h3>Overdue Books</h3>
     <p style="font-size: 2em; font-weight: bold; color: #dc3545;"><%= @overdue_borrowings %></p>
   </div>
-  
+
   <div class="card">
     <h3>Pending Reservations</h3>
     <p style="font-size: 2em; font-weight: bold; color: #ffc107;"><%= @pending_reservations %></p>
   </div>
-  
+
   <div class="card">
     <h3>Pending Reviews</h3>
     <p style="font-size: 2em; font-weight: bold; color: #6c757d;"><%= @pending_reviews %></p>
   </div>
 </div>
 
+<hr>
+
 <div class="card">
   <h2>⚠️ Overdue Books</h2>
-  
+
   <% if @overdue_books.any? %>
     <table>
       <thead>
         <tr>
-          <th>User</th>
+          <th>Member</th>
           <th>Book</th>
           <th>Due Date</th>
           <th>Days Overdue</th>
@@ -49,11 +51,17 @@
       <tbody>
         <% @overdue_books.each do |borrowing| %>
           <tr>
-            <td><%= link_to borrowing.user.name, borrowing.user %></td>
-            <td><%= link_to borrowing.book.title, borrowing.book %></td>
+            <td><%= borrowing.member.name %></td>
+            <td><%= borrowing.book.title %></td>
             <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
-            <td><span class="badge badge-danger"><%= borrowing.days_overdue %> days</span></td>
-            <td><%= link_to "View", borrowing, class: "btn" %></td>
+            <td>
+              <span class="badge badge-danger">
+                <%= borrowing.days_overdue %> days
+              </span>
+            </td>
+            <td>
+              <%= link_to "View", borrowing, class: "btn" %>
+            </td>
           </tr>
         <% end %>
       </tbody>
@@ -63,28 +71,30 @@
   <% end %>
 </div>
 
+<hr>
+
 <div class="card">
   <h2>📚 Recent Borrowings</h2>
-  
+
   <table>
     <thead>
       <tr>
-        <th>User</th>
+        <th>Member</th>
         <th>Book</th>
-        <th>Date</th>
+        <th>Borrowed On</th>
         <th>Status</th>
       </tr>
     </thead>
     <tbody>
       <% @recent_borrowings.each do |borrowing| %>
         <tr>
-          <td><%= link_to borrowing.user.name, borrowing.user %></td>
-          <td><%= link_to borrowing.book.title, borrowing.book %></td>
-          <td><%= borrowing.borrowed_date.strftime("%b %d, %Y") %></td>
+          <td><%= borrowing.member.name %></td>
+          <td><%= borrowing.book.title %></td>
+          <td><%= borrowing.created_at.strftime("%b %d, %Y") %></td>
           <td>
-            <% if borrowing.status == 'active' %>
+            <% if borrowing.active? %>
               <span class="badge badge-info">Active</span>
-            <% elsif borrowing.status == 'overdue' %>
+            <% elsif borrowing.overdue? %>
               <span class="badge badge-danger">Overdue</span>
             <% else %>
               <span class="badge badge-success">Returned</span>
@@ -94,4 +104,11 @@
       <% end %>
     </tbody>
   </table>
+</div>
+
+<hr>
+
+<div style="margin-top: 20px;">
+  <%= link_to "➕ Add New Book", new_book_path, class: "btn", style: "background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+  <%= link_to "📚 Manage Books", books_path, class: "btn", style: "background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-left: 10px;" %>
 </div>

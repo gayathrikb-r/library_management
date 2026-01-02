@@ -6,53 +6,64 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <%= stylesheet_link_tag "application", "application_custom", "data-turbo-track": "reload" %>
+    <% unless request.path.start_with?('/admin') %>
+      <%= stylesheet_link_tag "application_custom", "data-turbo-track": "reload" %>
+    <% end %>
+
     <%= javascript_importmap_tags %>
   </head>
 
   <body>
     <header>
       <nav>
-      <div>
-        <%= link_to "📚 Library", root_path, style: "font-size: 1.5em; font-weight: bold;" %>
-        <%= link_to "Books", books_path %>
-        <%= link_to "Authors", authors_path %>
-        <%= link_to "Categories", categories_path %>
-      </div>
+        <div>
+          <%= link_to "📚 Library", root_path, style: "font-size: 1.5em; font-weight: bold;" %>
+          <%= link_to "Books", books_path %>
+          <%= link_to "Authors", authors_path %>
+          <%= link_to "Categories", categories_path %>
+        </div>
 
-      <div>
-        <% if member_signed_in? %>
-        <span style="color: #fff; margin-right: 10px;">
-          Hello, <%= current_member.name || current_member.email %>
-        </span>
-        <%= link_to "My Borrowings", borrowings_path %>
-        <%= link_to "My Reservations", reservations_path %>
-        <%= link_to "Logout", destroy_member_session_path,
-                    method: :delete,
-                    data: { turbo_method: :delete } %>
-      <% elsif librarian_signed_in? %>
-        <span style="color: #fff; margin-right: 10px;">
-          Hello, <%= current_librarian.name || current_librarian.email %>
-        </span>
-        <%= link_to "Admin Dashboard", admin_root_path %>
-        <%= link_to "Logout", destroy_librarian_session_path,
-                    method: :delete,
-                    data: { turbo_method: :delete } %>
-      <% else %>
-        <%= link_to "Login", login_path %>
-        <%= link_to "Sign Up", sign_up_path %>
-      <% end %>
+        <div>
+          <% if member_signed_in? %>
+            <!-- MEMBER -->
+            <%= link_to "Hello, #{current_member.name || current_member.email}",
+                member_path(current_member),
+                style: "color: #fff; margin-right: 10px; text-decoration: none;" %>
 
-      </div>
-    </nav>
+            <%= link_to "My Borrowings", borrowings_path %>
+            <%= link_to "My Reservations", reservations_path %>
+            <%= link_to "Logout",
+                destroy_member_session_path,
+                data: { turbo_method: :delete } %>
 
+          <% elsif librarian_signed_in? %>
+            <!-- LIBRARIAN -->
+            <span style="color: #fff; margin-right: 10px;">
+              Hello, <%= current_librarian.name || current_librarian.email %>
+            </span>
+
+            <%= link_to "Borrowings", borrowings_path %>
+            <%= link_to "Dashboard", librarians_dashboard_path %>
+            <%= link_to "Logout",
+                destroy_librarian_session_path,
+                data: { turbo_method: :delete } %>
+
+          <% elsif admin_user_signed_in? %>
+            <%= link_to "Admin Panel", admin_root_path %>
+
+          <% else %>
+            <%= link_to "Login", login_path %>
+            <%= link_to "Sign Up", new_member_registration_path %>
+          <% end %>
+        </div>
+      </nav>
     </header>
 
     <div class="container">
       <% if flash[:notice] %>
         <div class="flash notice"><%= flash[:notice] %></div>
       <% end %>
-      
+
       <% if flash[:alert] %>
         <div class="flash alert"><%= flash[:alert] %></div>
       <% end %>

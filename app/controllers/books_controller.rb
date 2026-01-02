@@ -1,6 +1,10 @@
 class BooksController < ApplicationController
   before_action :set_book, only: [:show, :edit, :update, :destroy, :borrow, :reserve]
-  before_action :authenticate_librarian!, except: [:index, :show, :borrow, :reserve]
+
+  # Librarians can manage books
+  before_action :authenticate_librarian!, only: [:new, :create, :edit, :update, :destroy]
+
+  # Members can borrow or reserve
   before_action :authenticate_member!, only: [:borrow, :reserve]
 
   def index
@@ -12,9 +16,24 @@ class BooksController < ApplicationController
   end
 
   def show
-    @reviews = @book.reviews.approved.includes(:user).order(created_at: :desc)
-    @review = Review.new
+  @reviews = @book.reviews.approved.includes(:reviewer)
+
+  if member_signed_in?
+    @reviews =
+      @book.reviews
+           .where(status: :approved)
+           .or(@book.reviews.where(reviewer: current_member))
+           .includes(:reviewer)
   end
+
+  if librarian_signed_in?
+    @reviews = @book.reviews.includes(:reviewer)
+  end
+
+  @reviews = @reviews.order(created_at: :desc)
+  @review = Review.new
+end
+
 
   def new
     @book = Book.new
@@ -23,9 +42,9 @@ class BooksController < ApplicationController
   def create
     @book = Book.new(book_params)
     if @book.save
-      flash[:notice] = "Book created successfully"
-      redirect_to @book
+      redirect_to @book, notice: "Book created successfully"
     else
+      flash.now[:alert] = @book.errors.full_messages.join(", ")
       render :new, status: :unprocessable_entity
     end
   end
@@ -34,42 +53,38 @@ class BooksController < ApplicationController
 
   def update
     if @book.update(book_params)
-      flash[:notice] = "Book updated successfully"
-      redirect_to @book
+      redirect_to @book, notice: "Book updated successfully"
     else
+      flash.now[:alert] = @book.errors.full_messages.join(", ")
       render :edit, status: :unprocessable_entity
     end
   end
 
   def destroy
     if @book.destroy
-      flash[:notice] = "Book deleted"
-      redirect_to books_path
+      redirect_to books_path, notice: "Book deleted successfully"
     else
-      flash[:alert] = @book.errors.full_messages.join(", ")
-      redirect_to @book
+      redirect_to @book, alert: @book.errors.full_messages.join(", ")
     end
   end
 
   def borrow
     borrowing = current_member.borrowings.build(book: @book)
     if borrowing.save
-      flash[:notice] = "Book borrowed successfully! Due date: #{borrowing.due_date}"
-      redirect_to member_dashboard_path
+      redirect_to member_dashboard_path,
+                  notice: "Book borrowed successfully! Due date: #{borrowing.due_date}"
     else
-      flash[:alert] = borrowing.errors.full_messages.join(", ")
-      redirect_to @book
+      redirect_to @book, alert: borrowing.errors.full_messages.join(", ")
     end
   end
 
   def reserve
     reservation = current_member.reservations.build(book: @book)
     if reservation.save
-      flash[:notice] = "Book reserved successfully! We'll notify you when it's available."
-      redirect_to member_dashboard_path
+      redirect_to member_dashboard_path,
+                  notice: "Book reserved successfully! We'll notify you when it's available."
     else
-      flash[:alert] = reservation.errors.full_messages.join(", ")
-      redirect_to @book
+      redirect_to @book, alert: reservation.errors.full_messages.join(", ")
     end
   end
 
@@ -77,10 +92,11 @@ class BooksController < ApplicationController
 
   def set_book
     @book = Book.find(params[:id])
+  rescue ActiveRecord::RecordNotFound
+    redirect_to books_path, alert: "Book not found."
   end
 
   def book_params
-    # Only allow IDs for existing authors and categories
     params.require(:book).permit(
       :title, :isbn, :publication_year,
       :total_copies, :available_copies, :description,

@@ -11,11 +11,35 @@ class AuthorsController < ApplicationController
       end
   end
 
-  def show
-    @books = @author.books.includes(:categories)
-    @reviews = @author.reviews.approved.includes(:user).order(created_at: :desc)
-    @review = Review.new
-  end
+def show
+  @books = @author.books.includes(:categories)
+
+  @reviews =
+    if librarian_signed_in?
+      @author.reviews
+             .includes(:reviewer)
+             .order(created_at: :desc)
+
+    elsif member_signed_in?
+      @author.reviews
+             .where(
+               "status = ? OR reviewer_id = ?",
+               Review.statuses[:approved],
+               current_member.id
+             )
+             .includes(:reviewer)
+             .order(created_at: :desc)
+
+    else
+      @author.reviews
+             .where(status: Review.statuses[:approved])
+             .includes(:reviewer)
+             .order(created_at: :desc)
+    end
+
+  @review = Review.new
+end
+
 
   def new
     @author = Author.new
@@ -45,7 +69,7 @@ class AuthorsController < ApplicationController
 
   def destroy
     if @author.destroy
-      flash[:notice] = "Author deleted"
+      flash[:notice] = "Author deleted successfully"
       redirect_to authors_path
     else
       flash[:alert] = @author.errors.full_messages.to_sentence

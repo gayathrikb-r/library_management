@@ -1,4 +1,4 @@
-<h1>Welcome, <%= @user.name %>! 📚</h1>
+<h1>Welcome, <%= @uer.name %>! 📚</h1>
 
 <div class="card">
   <h2>Active Borrowings</h2>
@@ -57,7 +57,7 @@
         <% @reservations.each do |reservation| %>
           <tr>
             <td><%= link_to reservation.book.title, reservation.book %></td>
-            <td><%= reservation.reservation_date.strftime("%b %d, %Y") %></td>
+            <td><%= reservation.created_at.strftime("%b %d, %Y") %></td>
             <td><span class="badge badge-info"><%= reservation.status.capitalize %></span></td>
             <td>
               <%= link_to "Cancel", cancel_reservation_path(reservation), 
@@ -78,11 +78,16 @@
   <% if @recent_reviews.any? %>
     <% @recent_reviews.each do |review| %>
       <div style="margin-bottom: 15px; padding: 10px; border-left: 3px solid #007bff;">
-        <p><strong><%= link_to review.reviewable.try(:title) || review.reviewable.name, review.reviewable %></strong></p>
+        <p>
+          <strong>
+            <%= link_to review.reviewable.try(:title) || review.reviewable.try(:name) || "Item", review.reviewable %>
+          </strong>
+        </p>
         <p class="star-rating"><%= "⭐" * review.rating %> (<%= review.rating %>/5)</p>
         <p><%= review.comment %></p>
         <p style="font-size: 0.9em; color: #666;">
-          Status: <span class="badge badge-<%= review.status == 'approved' ? 'success' : 'warning' %>">
+          Status: 
+          <span class="badge badge-<%= review.status == 'approved' ? 'success' : 'warning' %>">
             <%= review.status.capitalize %>
           </span>
         </p>
