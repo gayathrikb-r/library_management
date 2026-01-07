@@ -1,4 +1,12 @@
 class Category < ApplicationRecord
+  def self.ransackable_attributes(_auth_object = nil)
+    %w[
+      id
+      name
+      created_at
+      updated_at
+    ]
+  end
   has_many :book_categories, dependent: :destroy
   has_many :member_categories, dependent: :destroy
   has_many :members, through: :member_categories

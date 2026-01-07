@@ -1,13 +1,12 @@
 ActiveAdmin.register Book do
   includes :authors,:categories,:tags, :reviews,:borrowings
-  permit_params :title,:isbn,:publication_year,:total_copies,:available_copies,
+  permit_params :title,:isbn,:total_copies,:available_copies,
   :description,author_ids: [],tag_ids: [],category_ids: []
   index do
     selectable_column
     id_column
     column :title
     column :isbn
-    column :publication_year
     column("Authors") { |b| b.authors.map(&:name).join(", ") }
     column :total_copies
     column :available_copies
@@ -18,7 +17,6 @@ ActiveAdmin.register Book do
   end
   filter :title
   filter :isbn
-  filter :publication_year
   filter :authors
   filter :categories
   filter :created_at
@@ -26,7 +24,6 @@ ActiveAdmin.register Book do
     f.inputs do
     f.input :title
     f.input :isbn
-    f.input :publication_year
     f.input :description
     f.input :total_copies
     f.input :available_copies
@@ -39,7 +36,6 @@ ActiveAdmin.register Book do
     attributes_table do
       row :title
       row :isbn
-      row :publication_year
       row :description
       row :total_copies
       row :available_copies
@@ -59,13 +55,9 @@ ActiveAdmin.register Book do
     end
   panel "Borrowing History" do
     table_for book.borrowings.order(created_at: :desc).limit(10) do
-      column("Member") do 
-        safe_join(
-          book.members.map{|b| link_to b.member.name, [:admin, b.member]},
-          ", "
-        )
-      end
-
+     column "Member" do |borrowing|
+      link_to borrowing.member.name, admin_member_path(borrowing.member)
+    end
       column :borrowed_date
       column :due_date
       column :returned_date

@@ -7,7 +7,7 @@ class MembersController < ApplicationController
   end
 
   def edit
-    # members only (guarded below)
+   
   end
 
   def update
@@ -20,17 +20,18 @@ class MembersController < ApplicationController
 
   private
 
-  # 🔐 Allow member OR librarian
   def authenticate_any_user!
     return if member_signed_in? || librarian_signed_in?
     redirect_to root_path, alert: "Please sign in"
   end
 
   def set_member
-    @member = Member.find(params[:id])
+
+  @member = Member.find_by(id: params[:id])
+  redirect_to root_path, alert: "Member not found" unless @member
+
   end
 
-  # 🧠 Authorization logic
   def authorize_member_access!
     return if librarian_signed_in?
 

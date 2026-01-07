@@ -1,0 +1,31 @@
+<% if defined?(message) && message.present? %>
+  <div class="flash <%= type == 'success' ? 'notice' : 'alert' %>" style="animation: slideIn 0.3s ease-out;">
+    <%= message %>
+  </div>
+  
+  <style>
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  
+  <script>
+    setTimeout(() => {
+      const flashElement = document.querySelector('#flash_messages .flash');
+      if (flashElement) {
+        flashElement.style.transition = 'opacity 0.5s ease-out';
+        flashElement.style.opacity = '0';
+        setTimeout(() => {
+          flashElement.remove();
+        }, 500);
+      }
+    }, 3000);
+  </script>
+<% end %>

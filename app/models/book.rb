@@ -1,4 +1,27 @@
 class Book < ApplicationRecord
+ def self.ransackable_attributes(auth_object=nil)
+   [
+    "id","title", "isbn",
+      "publication_year",
+      "description",
+      "total_copies",
+      "available_copies",
+      "created_at",
+      "updated_at"
+   ]
+ end
+ def self.ransackable_associations(auth_object = nil)
+   [
+    "book_authors", 
+    "authors",
+    "book_categories",   
+      "categories",
+      "tags",
+      "reviews",
+      "borrowings"
+   ]
+ end
+ 
   has_many :book_authors, dependent: :destroy
   has_many :authors, through: :book_authors
 

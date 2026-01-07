@@ -1,0 +1,43 @@
+<div class="card">
+  <h2>📌 Pending Reservations</h2>
+  <div id="flash_messages"></div>
+
+  <% if @pending_reservations.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Book</th>
+          <th>Reserved On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pending_reservations.each do |reservation| %>
+          <tr id="<%= dom_id(reservation) %>">
+            <td><%= reservation.member.name %></td>
+            <td><%= link_to reservation.book.title, reservation.book %></td>
+            <td><%= reservation.created_at.strftime("%b %d, %Y") %></td>
+            <td>
+              <div class="action-buttons">
+                <%= button_to "Fulfill",
+                    fulfill_librarians_reservation_path(reservation),
+                    method: :patch,
+                    form: { data: { turbo_confirm: "Fulfill this reservation?" } },
+                    class: "btn btn-success" %>
+
+                <%= button_to "Cancel",
+                    cancel_librarians_reservation_path(reservation),
+                    method: :patch,
+                    form: { data: { turbo_confirm: "Cancel this reservation?" } },
+                    class: "btn btn-danger" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No pending reservations 🎉</p>
+  <% end %>
+</div>

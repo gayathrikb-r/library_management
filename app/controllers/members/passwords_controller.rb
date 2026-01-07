@@ -1,34 +1,23 @@
 # frozen_string_literal: true
 
 class Members::PasswordsController < Devise::PasswordsController
-  # GET /resource/password/new
-  # def new
-  #   super
-  # end
-
   # POST /resource/password
-  # def create
-  #   super
-  # end
+  def create
+    self.resource = resource_class.send_reset_password_instructions(resource_params)
 
-  # GET /resource/password/edit?reset_password_token=abcdef
-  # def edit
-  #   super
-  # end
+    # Always show the same message, regardless of whether the email exists
+    if successfully_sent?(resource)
+      flash[:notice] = "If your email exists in our system, you will receive reset instructions shortly."
+    else
+      flash[:notice] = "If your email exists in our system, you will receive reset instructions shortly."
+    end
 
-  # PUT /resource/password
-  # def update
-  #   super
-  # end
+    redirect_to new_session_path(resource_name)
+  end
 
-  # protected
+  private
 
-  # def after_resetting_password_path_for(resource)
-  #   super(resource)
-  # end
-
-  # The path used after sending reset password instructions
-  # def after_sending_reset_password_instructions_path_for(resource_name)
-  #   super(resource_name)
-  # end
+  def resource_params
+    params.require(resource_name).permit(:email)
+  end
 end

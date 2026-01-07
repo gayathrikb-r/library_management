@@ -23,12 +23,12 @@
 
   <div class="card">
     <h3>Pending Reservations</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #ffc107;"><%= @pending_reservations %></p>
+    <p style="font-size: 2em; font-weight: bold; color: #ffc107;"><%= @pending_reservations_count %></p>
   </div>
 
   <div class="card">
     <h3>Pending Reviews</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #6c757d;"><%= @pending_reviews %></p>
+    <p style="font-size: 2em; font-weight: bold; color: #6c757d;"><%= @pending_reviews_count %></p>
   </div>
 </div>
 
@@ -72,7 +72,54 @@
 </div>
 
 <hr>
+<div class="card">
+  <h2>📝 Pending Reviews</h2>
 
+  <% if @pending_reviews.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Reviewer</th>
+          <th>Item</th>
+          <th>Rating</th>
+          <th>Comment</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% @pending_reviews.each do |review| %>
+          <tr>
+            <td><%= review.reviewer.name %></td>
+            <td>
+              <%= link_to(
+                    review.reviewable.try(:title) || review.reviewable.try(:name),
+                    review.reviewable
+                  ) %>
+            </td>
+            <td><%= review.rating %>/5</td>
+            <td><%= truncate(review.comment, length: 80) %></td>
+            <td>
+              <%= link_to "Approve",
+                  approve_review_path(review),
+                  data: { turbo_method: :patch },
+                  class: "btn btn-success btn-sm" %>
+
+              <%= link_to "Delete",
+                  review_path(review),
+                  data: { turbo_method: :delete, turbo_confirm: "Delete this review?" },
+                  class: "btn btn-danger btn-sm" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No pending reviews 🎉</p>
+  <% end %>
+</div>
+
+<hr>
 <div class="card">
   <h2>📚 Recent Borrowings</h2>
 
@@ -104,6 +151,51 @@
       <% end %>
     </tbody>
   </table>
+</div>
+
+<hr>
+<div class="card">
+  <h2>📌 Pending Reservations</h2>
+  <div id="flash_messages"></div>
+
+  <% if @pending_reservations.any? %>
+    <table>
+      <thead>
+        <tr>
+          <th>Member</th>
+          <th>Book</th>
+          <th>Reserved On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pending_reservations.each do |reservation| %>
+          <tr id="<%= dom_id(reservation) %>">
+            <td><%= reservation.member.name %></td>
+            <td><%= link_to reservation.book.title, reservation.book %></td>
+            <td><%= reservation.created_at.strftime("%b %d, %Y") %></td>
+            <td>
+              <div class="action-buttons">
+                <%= button_to "Fulfill",
+                    fulfill_librarians_reservation_path(reservation),
+                    method: :patch,
+                    form: { data: { turbo_confirm: "Fulfill this reservation?" } },
+                    class: "btn btn-success" %>
+
+                <%= button_to "Cancel",
+                    cancel_librarians_reservation_path(reservation),
+                    method: :patch,
+                    form: { data: { turbo_confirm: "Cancel this reservation?" } },
+                    class: "btn btn-danger" %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  <% else %>
+    <p>No pending reservations 🎉</p>
+  <% end %>
 </div>
 
 <hr>

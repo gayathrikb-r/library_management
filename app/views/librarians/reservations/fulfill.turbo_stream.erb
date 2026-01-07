@@ -1,0 +1,4 @@
+<%= turbo_stream.remove dom_id(@reservation) %>
+<%= turbo_stream.update "flash_messages" do %>
+  <%= render partial: "shared/flash", locals: { message: "Reservation fulfilled successfully", type: "success" } %>
+<% end %>

@@ -1,7 +1,12 @@
 class Review < ApplicationRecord
   belongs_to :reviewer, polymorphic: true
   belongs_to :reviewable, polymorphic: true
-
+  def self.ransackable_associations(auth_object = nil)
+    ["reviewable", "reviewer"]
+  end
+  def self.ransackable_attributes(auth_object = nil)
+    ["comment", "created_at", "id", "id_value", "rating", "reviewable_id", "reviewable_type", "reviewer_id", "reviewer_type", "status", "updated_at"]
+  end
   enum status: { pending: 0, approved: 1, flagged: 2 }
 
   validates :rating, inclusion: { in: 1..5 }

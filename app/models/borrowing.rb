@@ -2,15 +2,22 @@ class Borrowing < ApplicationRecord
   belongs_to :member
   belongs_to :librarian, optional: true
   belongs_to :book
-
+  def self.ransackable_attributes(auth_object = nil)
+    ["book_id", "borrowed_date", "created_at", "due_date", "id", "id_value", "librarian_id", "member_id", "returned_date", "status", "updated_at"]
+  end
+  def self.ransackable_associations(auth_object = nil)
+    ["book", "librarian", "member"]
+  end
   enum status: { borrowed: 0, returned: 1, overdue: 2 }
 
   FINE_PER_DAY = 5
 
   validates :borrowed_date, :due_date, presence: true
+  validates :member, :book, presence: true
   validate :member_can_borrow, on: :create
   validate :book_is_available, on: :create
   validate :due_date_after_borrowed_date
+
 
   # Callbacks
   before_validation :set_dates, on: :create
@@ -20,12 +27,16 @@ class Borrowing < ApplicationRecord
   after_update :notify_next_reservation, if: :returned_now?
 
   # Scopes
+  scope :borrowed, -> { where(status: :borrowed) }
+  scope :returned, -> { where(status: :returned) }
   scope :active, -> { borrowed }
-  scope :returned, -> { returned }
   scope :overdue, -> {
-  where(status: :overdue)
-    .or(where(status: :borrowed).where("due_date < ?", Date.today))
-}
+    where(status: :overdue)
+      .or(
+        where(status: :borrowed)
+          .where("due_date < ?", Date.today)
+      )
+  }
   scope :for_member, ->(member) { where(member: member) }
   scope :for_book, ->(book) { where(book: book) }
   scope :due_soon, -> { borrowed.where("due_date <= ?", 3.days.from_now) }
@@ -56,6 +67,7 @@ class Borrowing < ApplicationRecord
   end
 
   def member_can_borrow
+    return unless member
     if member.has_overdue_books?
       errors.add(:base, "Member has overdue books")
     elsif member.active_borrowings_count >= 5

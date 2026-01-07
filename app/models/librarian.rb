@@ -3,7 +3,15 @@ class Librarian < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
-
+  def self.ransackable_attributes(auth_object = nil)
+    %w[
+      id
+      name
+      email
+      phone
+      created_at
+    ]
+  end
   # Associations
   has_many :processed_borrowings,
            class_name: "Borrowing",

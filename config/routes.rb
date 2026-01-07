@@ -1,6 +1,5 @@
 Rails.application.routes.draw do
   devise_for :admin_users, ActiveAdmin::Devise.config
-  get "auth/login"
   # Member namespace
   namespace :member do
     get "dashboard/show", to: "dashboard#show", as: :dashboard
@@ -19,13 +18,19 @@ Rails.application.routes.draw do
   root "books#index"
 
   get "/login", to: "auth#login", as: :login
-  get "/sign_up", to: "auth#signup"
-  # Devise routes
-  devise_for :members, path: "members", controllers: {
-    registrations: "members/registrations",
-    sessions: "members/sessions"
-  }
+ devise_for :members, 
+           path: "members", 
+           path_names: { sign_up: '../sign_up' }, # This forces the mapping
+           controllers: {
+             registrations: "members/registrations",
+             sessions: "members/sessions",
+             passwords: "members/passwords"
+           }
 
+devise_scope :member do
+  get "/sign_up", to: "members/registrations#new"
+  post "/sign_up", to: "members/registrations#create"
+end
   devise_for :librarians, path: "librarians", controllers: {
     registrations: "librarians/registrations",
     sessions: "librarians/sessions"
@@ -54,6 +59,7 @@ Rails.application.routes.draw do
   resources :reservations, only: [:index, :show, :create] do
     member { patch :cancel }
   end
+  
   resources :members, only: [:show,:edit,:update]
 
   # Reviews actions
@@ -63,6 +69,17 @@ Rails.application.routes.draw do
       patch :approve  # librarians
     end
   end
+  #Reservations actions 
+  namespace :librarians do
+    resources :reservations, only: [:index] do
+      member do
+        patch :fulfill
+        patch :cancel
+      end
+    end
+  end
+
+
 
   ActiveAdmin.routes(self)
 end

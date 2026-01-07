@@ -16,13 +16,22 @@ class Librarians::DashboardController < ApplicationController
       .limit(10)
 
     # Reservations
-    @pending_reservations = Reservation.pending.count
+    @pending_reservations_count = Reservation.pending.count
 
-    # Reviews (pending approval)
+    @pending_reservations = Reservation
+      .pending
+      .includes(:member, :book)
+      .order(created_at: :desc)
+      .limit(10)  
+     # Reviews (pending approval)
+    @pending_reviews_count = Review.pending.count
+
     @pending_reviews = Review
       .pending
       .includes(:reviewer, :reviewable)
-      .count
+      .order(created_at: :desc)
+      .limit(10)
+
 
     # Overdue books list
     @overdue_books = Borrowing

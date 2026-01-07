@@ -1,14 +1,23 @@
 <div class="auth-page auth-signupandlogin">
-  <h2 class="auth-title">
-  <%= resource_name == :member ? "Sign up as Member" : "Sign up as Librarian" %>
-  </h2>
+  <h2 class="auth-title">Sign up as Member</h2>
 
-  <%= form_for(resource,
-               as: resource_name,
-               url: registration_path(resource_name),
-               html: { class: "auth-form" }) do |f| %>
-
-    <%= render "devise/shared/error_messages", resource: resource %>
+  <%# We hardcode the url to member_registration_path since this is only for members now %>
+<%= form_for(resource,
+             as: resource_name,
+             url: "/sign_up", # Hardcode this to match your get/post route
+             html: {
+               class: "auth-form",
+               data: { turbo: false }
+             }) do |f| %>
+    <% if flash[:errors].present? %>
+      <div class="auth-errors">
+        <ul>
+          <% flash[:errors].each do |error| %>
+            <li><%= error %></li>
+          <% end %>
+        </ul>
+      </div>
+    <% end %>
 
     <div class="form-group">
       <%= f.label :name %>
@@ -19,7 +28,7 @@
 
     <div class="form-group">
       <%= f.label :email %>
-      <%= f.email_field :email,
+      <%= f.text_field :email,
             class: "form-control",
             autocomplete: "email" %>
     </div>

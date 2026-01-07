@@ -1,6 +1,5 @@
 class Member < ApplicationRecord
-  # Include default devise modules. Others available are:
-  # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
+  # Devise modules
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
@@ -19,9 +18,6 @@ class Member < ApplicationRecord
 
   # Validations
   validates :name, presence: true
-  validates :email, presence: true, uniqueness: true,
-                    format: { with: URI::MailTo::EMAIL_REGEXP }
-
   validates :phone,
             format: { with: /\A\d{10}\z/, message: "must be 10 digits" },
             allow_blank: true
@@ -31,13 +27,22 @@ class Member < ApplicationRecord
   after_commit :send_welcome_email, on: :create
   before_destroy :check_active_borrowings
 
-  # Business logic
+  # Scopes / Methods
   def has_overdue_books?
-    borrowings.overdue.exists?
+    borrowings.borrowed.where("due_date < ?", Date.today).exists?
   end
 
   def active_borrowings_count
     borrowings.borrowed.count
+  end
+
+  # Ransack support
+  def self.ransackable_attributes(auth_object = nil)
+    %w[name email phone birth_date bio created_at updated_at]
+  end
+
+  def self.ransackable_associations(auth_object = nil)
+    %w[borrowings reservations reviews member_categories liked_categories favorite_author]
   end
 
   private
