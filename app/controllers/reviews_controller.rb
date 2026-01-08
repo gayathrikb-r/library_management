@@ -1,15 +1,10 @@
 class ReviewsController < ApplicationController
-  # ===============================
-  # AUTH
-  # ===============================
+
   before_action :set_reviewable, only: [:create]
   before_action :set_review, only: [:edit, :update, :destroy, :flag, :approve]
   before_action :authenticate_member_or_librarian!, only: [:destroy, :flag, :approve]
   before_action :authorize_review_owner_or_librarian!, only: [:edit, :update, :destroy]
 
-  # ===============================
-  # ACTIONS
-  # ===============================
   def create
     authenticate_member!
     @review = @reviewable.reviews.build(review_params)
@@ -38,28 +33,20 @@ class ReviewsController < ApplicationController
     redirect_to @review.reviewable, notice: "Review deleted"
   end
 
-  # ===============================
-  # MEMBER ACTION
-  # ===============================
   def flag
     @review.flag!
     redirect_to @review.reviewable, notice: "Review flagged for moderation"
   end
 
-  # ===============================
-  # LIBRARIAN ACTION
-  # ===============================
+
   def approve
     @review.update!(status: "approved")
     redirect_to @review.reviewable, notice: "Review approved"
   end
 
-  # ===============================
-  # PRIVATE
-  # ===============================
+
   private
 
-  # Only one authentication method for both roles
   def authenticate_member_or_librarian!
     unless member_signed_in? || librarian_signed_in?
       redirect_to login_path, alert: "You must be signed in to perform this action"

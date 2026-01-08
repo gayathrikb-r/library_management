@@ -78,8 +78,58 @@ end
       end
     end
   end
+  #Api
+namespace :api do
+  namespace :v1 do
+    # Books, authors, categories
+    resources :books do
+      member do
+        post :borrow
+        post :reserve
+      end
+      resources :reviews, only: [:create]
+    end
 
+    resources :authors do
+      resources :reviews, only: [:create]
+    end
+
+    resources :categories
+
+    # Borrowings & Reservations
+    resources :borrowings, only: [:index, :show, :create] do
+      member { patch :return_book }
+    end
+
+    resources :reservations, only: [:index, :show, :create] do
+      member { patch :cancel }
+    end
+
+    resources :members, only: [:show, :edit, :update]
+
+    # Reviews actions
+    resources :reviews, only: [:edit, :update, :destroy] do
+      member do
+        patch :flag     # members
+        patch :approve  # librarians
+      end
+    end
+
+    # Librarian-specific reservations
+    namespace :librarians do
+      resources :reservations, only: [:index] do
+        member do
+          patch :fulfill
+          patch :cancel
+        end
+      end
+    end
+  end
+end
 
 
   ActiveAdmin.routes(self)
 end
+
+
+
