@@ -67,16 +67,14 @@ end
     end
   end
 
-  def destroy
-    if @author.destroy
-      flash[:notice] = "Author deleted successfully"
-      redirect_to authors_path
-    else
-      flash[:alert] = @author.errors.full_messages.to_sentence
-      redirect_to author_path(@author)
-    end
+def destroy
+  if @author.destroy
+    # 204 No Content is the standard success response for DELETE
+    head :no_content 
+  else
+    render json: { errors: @author.errors.full_messages }, status: :unprocessable_entity
   end
-
+end
   private
 
   def set_author

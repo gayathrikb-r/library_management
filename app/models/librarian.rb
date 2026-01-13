@@ -18,7 +18,15 @@ class Librarian < ApplicationRecord
            dependent: :nullify
 
   has_many :reviews, as: :reviewer, dependent: :destroy
+  has_many :oauth_access_grants,
+           as: :resource_owner,
+           class_name: 'Doorkeeper::AccessGrant',
+           dependent: :destroy
 
+  has_many :oauth_access_tokens,
+           as: :resource_owner,
+           class_name: 'Doorkeeper::AccessToken',
+           dependent: :destroy
   # Validations
   validates :name, presence: true
   validates :email, presence: true, uniqueness: true,
@@ -30,6 +38,8 @@ class Librarian < ApplicationRecord
 
   # Callbacks
   before_validation :normalize_phone
+  after_update :revoke_all_oauth_tokens!, if: :saved_change_to_encrypted_password?
+
 
   private
 

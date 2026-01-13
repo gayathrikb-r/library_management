@@ -1,7 +1,7 @@
 # app/admin/reviews.rb
 ActiveAdmin.register Review do
   actions :all, except: [:new, :create, :edit]
-
+  config.per_page = [10, 20, 50, 100]
   permit_params :status
 
   scope :all, default: true

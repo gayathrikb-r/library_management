@@ -1,6 +1,7 @@
 class Author < ApplicationRecord
   # Associations
-  has_many :book_authors, dependent: :restrict_with_error
+has_many :members, foreign_key: "favorite_author_id", dependent: :nullify
+has_many :book_authors, dependent: :destroy 
   has_many :books, through: :book_authors
   has_many :reviews, as: :reviewable, dependent: :destroy
    def self.ransackable_attributes(auth_object = nil)
@@ -26,5 +27,8 @@ class Author < ApplicationRecord
   # Methods
   def books_count
     books.count
+  end
+  def as_json(options = {})
+    super(options.merge(methods: [:books_count]))
   end
 end

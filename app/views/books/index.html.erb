@@ -2,99 +2,52 @@
   <h1>📚 Book Catalog</h1>
 </div>
 
-<!-- Filters -->
-<div class="card">
-  <%= form_with url: books_path, method: :get, local: true, class: "filter-form" do |f| %>
-    <div class="filter-row">
+<div data-controller="books">
+  <!-- Filters -->
+  <div class="card">
+    <form data-action="submit->books#search" class="filter-form">
+      <div class="filter-row">
+        <input 
+          type="text"
+          name="search"
+          data-books-target="search"
+          placeholder="Search by title or ISBN"
+          class="filter-input search-main">
 
-      <%= f.text_field :search,
-            placeholder: "Search by title or ISBN",
-            value: params[:search],
-            class: "filter-input search-main" %>
+        <select 
+          name="category_id"
+          data-books-target="category"
+          class="filter-input">
+          <option value="">All Categories</option>
+          <% Category.order(:name).each do |category| %>
+            <option value="<%= category.id %>"><%= category.name %></option>
+          <% end %>
+        </select>
 
-      <%= f.select :category_id,
-            options_from_collection_for_select(
-              Category.order(:name),
-              :id,
-              :name,
-              params[:category_id]
-            ),
-            { prompt: "All Categories" },
-            class: "filter-input" %>
+        <select 
+          name="available"
+          data-books-target="available"
+          class="filter-input">
+          <option value="">All Books</option>
+          <option value="true">Available Only</option>
+        </select>
 
-      <%= f.select :available,
-            options_for_select(
-              [["All Books", ""], ["Available Only", "true"]],
-              params[:available]
-            ),
-            {},
-            class: "filter-input" %>
+        <button type="submit" class="btn btn-primary">Search</button>
+        <button type="button" data-action="click->books#clear" class="btn btn-secondary">Clear</button>
+      </div>
+    </form>
+  </div>
 
-      <%= f.submit "Search", class: "btn btn-primary" %>
-      <%= link_to "Clear", books_path, class: "btn btn-secondary" %>
+  <!-- Librarian-only action -->
+  <% if librarian_signed_in? %>
+    <div class="actions-bar">
+      <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success" %>
     </div>
   <% end %>
+
+  <!-- Books Grid -->
+  <div class="grid" data-books-target="grid">
+    <!-- Books will be loaded here via JavaScript -->
+  </div>
+  <div data-books-target="pagination"></div>
 </div>
-
-<!-- Librarian-only action -->
-<% if librarian_signed_in? %>
-  <div class="actions-bar">
-    <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success" %>
-  </div>
-<% end %>
-
-<!-- Books Grid -->
-<% if @books.any? %>
-  <div class="grid">
-    <% @books.each do |book| %>
-      <div class="card book-card">
-
-        <h3 class="book-title">
-          <%= link_to book.title, book %>
-        </h3>
-
-        <p class="book-meta">
-          <strong>Authors:</strong>
-          <%= book.authors.any? ? book.authors.map(&:name).join(", ") : "Unknown" %>
-        </p>
-
-        <p class="book-meta">
-          <strong>ISBN:</strong>
-          <%= book.isbn.presence || "N/A" %>
-        </p>
-
-        <div class="availability">
-          <% if book.available? %>
-            <span class="badge badge-success">
-              Available (<%= book.available_copies %>)
-            </span>
-          <% else %>
-            <span class="badge badge-danger">Unavailable</span>
-          <% end %>
-        </div>
-
-        <% if book.average_rating.present? %>
-          <p class="star-rating">
-            <%= "⭐" * book.average_rating.round %>
-            <span class="rating-text">
-              (<%= book.average_rating.round(1) %>/5)
-            </span>
-          </p>
-        <% end %>
-
-        <%= link_to "View Details", book, class: "btn btn-outline mt-10" %>
-      </div>
-    <% end %>
-  </div>
-
-  <!-- Pagination -->
-  <div class="pagination-container">
-    <%= paginate @books %>
-  </div>
-
-<% else %>
-  <div class="card empty-state">
-    <p>No books found.</p>
-    <p class="muted">Try adjusting your search or filters.</p>
-  </div>
-<% end %>

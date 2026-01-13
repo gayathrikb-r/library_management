@@ -1,54 +1,26 @@
 <h1>🔖 Reservations</h1>
 
-<div class="card">
-  <% if @reservations.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Book</th>
-          <th>Reserved Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <% @reservations.each do |reservation| %>
-          <tr>
-            <td><%= reservation.book.title %></td>
-
-            <td>
-              <%= reservation.reservation_date.strftime("%b %d, %Y") %>
-            </td>
-
-            <td>
-              <% case reservation.status %>
-              <% when 'pending' %>
-                <span class="badge badge-warning">Pending</span>
-              <% when 'fulfilled' %>
-                <span class="badge badge-success">Fulfilled</span>
-              <% when 'cancelled' %>
-                <span class="badge badge-danger">Cancelled</span>
-              <% end %>
-            </td>
-
-            <td>
-              <% if reservation.status == 'pending' %>
-                <%= link_to "Cancel",
-                    cancel_reservation_path(reservation),
-                    data: { turbo_method: :patch },
-                    class: "btn btn-danger btn-sm" %>
-              <% end %>
-
-              <%= link_to "Details",
-                  reservation,
-                  class: "btn btn-secondary btn-sm" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No reservations found.</p>
-  <% end %>
+<div data-controller="reservations">
+  <div class="card" data-reservations-target="table">
+    <!-- Reservations will be loaded here -->
+  </div>
 </div>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+</style>

@@ -5,7 +5,6 @@ module Api
       before_action :authenticate_any!
 
       def index
-
         borrowings = if librarian_signed_in?
                        params[:member_id].present? ? Borrowing.where(member_id: params[:member_id]) : Borrowing.all
                      else
@@ -13,18 +12,31 @@ module Api
                      end
 
         borrowings = borrowings.includes(:book, :member)
+
         borrowings = case params[:filter]
-                     when "active"   then borrowings.active
-                     when "overdue"  then borrowings.overdue
-                     when "returned" then borrowings.returned
+                     when "active"   then borrowings.where(status: 'borrowed')
+                     when "overdue"  then borrowings.where(status: 'overdue')
+                     when "returned" then borrowings.where(status: 'returned')
                      else borrowings
                      end
 
-        render json: borrowings.order(created_at: :desc), include: [:book, :member]
+        render json: borrowings.order(created_at: :desc).as_json(
+          include: {
+            book: { only: [:id, :title] },
+            member: { only: [:id, :name] }
+          },
+          methods: [:days_overdue]
+        )
       end
 
       def show
-        render json: @borrowing, include: [:book, :member]
+        render json: @borrowing.as_json(
+          include: {
+            book: { only: [:id, :title] },
+            member: { only: [:id, :name] }
+          },
+          methods: [:days_overdue]
+        )
       end
 
       def return_book
@@ -43,7 +55,7 @@ module Api
       private
 
       def set_borrowing
-         @borrowing = if librarian_signed_in?
+        @borrowing = if librarian_signed_in?
                        Borrowing.find(params[:id])
                      else
                        current_member.borrowings.find(params[:id])
@@ -51,9 +63,8 @@ module Api
       end
 
       def authenticate_any!
-        unless librarian_signed_in? || member_signed_in?
-          render json: { error: "You must be logged in" }, status: :unauthorized
-        end
+        return if librarian_signed_in? || member_signed_in?
+        render json: { error: "You must be logged in" }, status: :unauthorized
       end
     end
   end

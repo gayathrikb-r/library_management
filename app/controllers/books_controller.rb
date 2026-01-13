@@ -16,7 +16,7 @@ class BooksController < ApplicationController
   end
 
   def show
-  @reviews = @book.reviews.approved.includes(:reviewer)
+  @reviews = @book.reviews.includes(:reviewer)
 
   if member_signed_in?
     @reviews =

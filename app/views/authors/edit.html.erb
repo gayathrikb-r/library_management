@@ -1,34 +1,50 @@
 <div class="card">
   <h1>Edit Author</h1>
-  
-  <%= form_with model: @author do |f| %>
-    <% if @author.errors.any? %>
-      <div class="flash alert">
-        <h3><%= pluralize(@author.errors.count, "error") %>:</h3>
-        <ul>
-          <% @author.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
+
+  <div data-controller="author-form" 
+       data-author-form-author-id-value="<%= @author.id %>"
+       data-author-form-is-edit-value="true">
+    
+    <div data-author-form-target="errors"></div>
+    
+    <form data-action="submit->author-form#submit">
+      <div class="form-group">
+        <label>Name *</label>
+        <input type="text" name="author[name]" value="<%= @author.name %>" required>
       </div>
-    <% end %>
-    
-    <div class="form-group">
-      <%= f.label :name %>
-      <%= f.text_field :name, required: true %>
-    </div>
-    
-    <div class="form-group">
-      <%= f.label :birth_date %>
-      <%= f.date_field :birth_date %>
-    </div>
-    
-    <div class="form-group">
-      <%= f.label :biography %>
-      <%= f.text_area :biography %>
-    </div>
-    
-    <%= f.submit "Update Author", class: "btn" %>
-    <%= link_to "Cancel", @author, class: "btn btn-secondary" %>
-  <% end %>
+
+      <div class="form-group">
+        <label>Birth Date</label>
+        <input type="date" name="author[birth_date]" value="<%= @author.birth_date %>">
+      </div>
+
+      <div class="form-group">
+        <label>Biography</label>
+        <textarea name="author[biography]" rows="6"><%= @author.biography %></textarea>
+      </div>
+
+      <button type="submit" class="btn">Update Author</button>
+      <%= link_to "Cancel", @author, class: "btn btn-secondary" %>
+    </form>
+  </div>
 </div>
+
+<style>
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+</style>

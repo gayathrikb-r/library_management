@@ -73,14 +73,24 @@ class Book < ApplicationRecord
     increment!(:available_copies) if available_copies < total_copies
   end
 
-  def update_average_rating!
-    approved = reviews.approved
-    update!(
-      average_rating: approved.average(:rating),
-      reviews_count: approved.count
-    )
-  end
+# app/models/book.rb
 
+def update_average_rating!
+  reviews_with_rating = reviews.where.not(rating: nil)
+  
+  if reviews_with_rating.any?
+    self.average_rating = reviews_with_rating.average(:rating).to_f.round(2)
+  else
+    self.average_rating = 0.0
+  end
+  
+  # Skip validation when updating only the rating
+  save(validate: false)
+end
+  def average_rating
+  # If reviews.average is nil, return 0.0
+  reviews.approved.average(:rating)&.to_f || 0.0
+  end
   private
 
   def normalize_isbn
@@ -103,4 +113,5 @@ class Book < ApplicationRecord
       throw :abort
     end
   end
+  
 end

@@ -1,6 +1,6 @@
 ActiveAdmin.register Librarian do
   permit_params :name, :email, :phone, :password, :password_confirmation
-
+  
   index do
     selectable_column
     id_column

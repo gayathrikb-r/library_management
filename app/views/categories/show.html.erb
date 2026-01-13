@@ -1,31 +1,13 @@
-<div class="card">
-  <h1><%= @category.name %></h1>
+<div 
+  data-controller="category-show" 
+  data-category-show-category-id-value="<%= @category.id %>"
+  data-librarian-signed-in="<%= librarian_signed_in? %>">
   
-  <% if  librarian_signed_in? %>
-    <%= link_to "Edit", edit_category_path(@category), class: "btn" %>
-    <%= link_to "Delete", @category, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, 
-        class: "btn btn-danger" %>
-  <% end %>
-</div>
+  <div class="card" data-category-show-target="categoryDetails">
+    <!-- Category details will be loaded here -->
+  </div>
 
-<div class="card">
-  <h2>Books in <%= @category.name %> (<%= @books.count %>)</h2>
-  
-  <% if @books.any? %>
-    <div class="grid">
-      <% @books.each do |book| %>
-        <div style="padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-          <h4><%= link_to book.title, book %></h4>
-          <p><%= book.authors.map(&:name).join(", ") %></p>
-          <% if book.available? %>
-            <span class="badge badge-success">Available</span>
-          <% else %>
-            <span class="badge badge-danger">Unavailable</span>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-  <% else %>
-    <p>No books in this category yet.</p>
-  <% end %>
+  <div class="card" data-category-show-target="booksList">
+    <!-- Books will be loaded here -->
+  </div>
 </div>

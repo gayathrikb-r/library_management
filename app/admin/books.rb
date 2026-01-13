@@ -2,6 +2,7 @@ ActiveAdmin.register Book do
   includes :authors,:categories,:tags, :reviews,:borrowings
   permit_params :title,:isbn,:total_copies,:available_copies,
   :description,author_ids: [],tag_ids: [],category_ids: []
+  config.per_page = [10, 20, 50, 100]
   index do
     selectable_column
     id_column

@@ -1,27 +1,52 @@
 <div class="card">
   <h1>Edit Your Review</h1>
-
-  <%= form_with model: [@reviewable, @review], local: true do |f| %>
-    <div class="form-group">
-      <%= f.label :rating, "Rating (1–5 stars)" %>
-      <%= f.select :rating,
-            (1..5).to_a.reverse,
-            {},
-            class: "form-control",
-            required: true %>
-    </div>
-
-    <div class="form-group">
-      <%= f.label :comment, "Your Review" %>
-      <%= f.text_area :comment,
-            rows: 4,
-            class: "form-control",
-            required: true %>
-    </div>
-
-    <div class="actions">
-      <%= f.submit "Update Review", class: "btn btn-success" %>
-      <%= link_to "Cancel", @reviewable, class: "btn btn-secondary" %>
-    </div>
-  <% end %>
+  
+  <div data-controller="review-edit"
+       data-review-edit-review-id-value="<%= @review.id %>"
+       data-review-edit-reviewable-type-value="<%= @reviewable.class.name %>"
+       data-review-edit-reviewable-id-value="<%= @reviewable.id %>">
+    
+    <div data-review-edit-target="errors"></div>
+    
+    <form data-action="submit->review-edit#submit">
+      <div class="form-group">
+        <label>Rating (1–5 stars)</label>
+        <select name="review[rating]" class="form-control" required>
+          <% (1..5).to_a.reverse.each do |n| %>
+            <option value="<%= n %>" <%= 'selected' if @review.rating == n %>><%= n %></option>
+          <% end %>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label>Your Review</label>
+        <textarea name="review[comment]" 
+                  rows="4" 
+                  class="form-control" 
+                  required><%= @review.comment %></textarea>
+      </div>
+      
+      <div class="actions">
+        <button type="submit" class="btn btn-success">Update Review</button>
+        <a href="<%= polymorphic_path(@reviewable) %>" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+  </div>
 </div>
+
+<style>
+  .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .actions {
+    margin-top: 20px;
+  }
+</style>

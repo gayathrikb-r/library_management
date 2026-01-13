@@ -1,43 +1,45 @@
-<div class="card">
-  <h2>📌 Pending Reservations</h2>
-  <div id="flash_messages"></div>
-
-  <% if @pending_reservations.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Book</th>
-          <th>Reserved On</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @pending_reservations.each do |reservation| %>
-          <tr id="<%= dom_id(reservation) %>">
-            <td><%= reservation.member.name %></td>
-            <td><%= link_to reservation.book.title, reservation.book %></td>
-            <td><%= reservation.created_at.strftime("%b %d, %Y") %></td>
-            <td>
-              <div class="action-buttons">
-                <%= button_to "Fulfill",
-                    fulfill_librarians_reservation_path(reservation),
-                    method: :patch,
-                    form: { data: { turbo_confirm: "Fulfill this reservation?" } },
-                    class: "btn btn-success" %>
-
-                <%= button_to "Cancel",
-                    cancel_librarians_reservation_path(reservation),
-                    method: :patch,
-                    form: { data: { turbo_confirm: "Cancel this reservation?" } },
-                    class: "btn btn-danger" %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No pending reservations 🎉</p>
-  <% end %>
+<div data-controller="librarian-reservations">
+  <div class="card">
+    <h2>📌 Pending Reservations</h2>
+    <div id="flash_messages" data-librarian-reservations-target="flash"></div>
+    
+    <div data-librarian-reservations-target="table">
+      <!-- Reservations will be loaded here -->
+    </div>
+  </div>
 </div>
+
+<style>
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+</style>

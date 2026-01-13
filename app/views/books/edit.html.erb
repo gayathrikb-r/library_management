@@ -1,109 +1,117 @@
 <div class="card">
   <h1>Edit Book</h1>
 
-  <%= form_with model: @book do |f| %>
-    <% if @book.errors.any? %>
-      <div class="flash alert">
-        <h3><%= pluralize(@book.errors.count, "error") %>:</h3>
-        <ul>
-          <% @book.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
+  <div data-controller="book-form" 
+       data-book-form-book-id-value="<%= @book.id %>"
+       data-book-form-is-edit-value="true">
+    
+    <div data-book-form-target="errors"></div>
+    
+    <form data-action="submit->book-form#submit">
+      <div class="form-group">
+        <label>Title *</label>
+        <input type="text" name="book[title]" value="<%= @book.title %>" required class="form-control">
       </div>
-    <% end %>
 
+      <div class="form-group">
+        <label>ISBN</label>
+        <input type="text" name="book[isbn]" value="<%= @book.isbn %>" class="form-control">
+      </div>
 
-    <div class="form-group">
-      <%= f.label :title %>
-      <%= f.text_field :title, required: true %>
-    </div>
+      <div class="form-group">
+        <label>Publication Year</label>
+        <input type="number" name="book[publication_year]" value="<%= @book.publication_year %>" class="form-control">
+      </div>
 
-    <div class="form-group">
-      <%= f.label :isbn %>
-      <%= f.text_field :isbn %>
-    </div>
+      <div class="form-group">
+        <label>Total Copies</label>
+        <input type="number" name="book[total_copies]" value="<%= @book.total_copies %>" min="0" class="form-control">
+      </div>
 
-    <div class="form-group">
-      <%= f.label :publication_year %>
-      <%= f.number_field :publication_year %>
-    </div>
+      <div class="form-group">
+        <label>Available Copies</label>
+        <input type="number" name="book[available_copies]" value="<%= @book.available_copies %>" min="0" class="form-control">
+      </div>
 
-    <div class="form-group">
-      <%= f.label :total_copies %>
-      <%= f.number_field :total_copies, min: 0 %>
-    </div>
+      <div class="form-group">
+        <label>Description</label>
+        <textarea name="book[description]" rows="4" class="form-control"><%= @book.description %></textarea>
+      </div>
 
-    <div class="form-group">
-      <%= f.label :available_copies %>
-      <%= f.number_field :available_copies, min: 0 %>
-    </div>
+      <div class="form-group">
+        <label style="font-weight: bold; margin-bottom: 10px; display: block;">Authors</label>
 
-    <div class="form-group">
-      <%= f.label :description %>
-      <%= f.text_area :description %>
-    </div>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+          <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Authors:</p>
 
+          <div class="checkbox-group">
+            <% Author.order(:name).each do |author| %>
+              <div class="checkbox-item">
+                <input type="checkbox" 
+                       name="book[author_ids][]" 
+                       value="<%= author.id %>" 
+                       id="author_<%= author.id %>"
+                       <%= 'checked' if @book.author_ids.include?(author.id) %>>
+                <label for="author_<%= author.id %>"><%= author.name %></label>
+              </div>
+            <% end %>
+          </div>
+        </div>
 
-    <div class="form-group">
-      <label style="font-weight: bold; margin-bottom: 10px; display: block;">Authors</label>
-
- 
-      <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
-        <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Authors:</p>
-
-        <div class="checkbox-group">
-          <%= f.collection_check_boxes :author_ids, Author.order(:name), :id, :name do |b| %>
-            <div class="checkbox-item">
-              <%= b.check_box %>
-              <%= b.label %>
-            </div>
-          <% end %>
+        <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; border: 2px solid #007bff;">
+          <p style="font-weight: bold; color: #007bff;">Add New Authors:</p>
+          <input type="text" name="book[new_author_name]"
+                 placeholder="Comma separated (e.g. John Smith, Jane Doe)"
+                 style="width:100%; padding:10px;">
         </div>
       </div>
 
- 
-      <div style="background: #e7f3ff; padding: 15px; border-radius: 4px; border: 2px solid #007bff;">
-        <p style="font-weight: bold; color: #007bff;">Add New Authors:</p>
-        <%= text_field_tag 'book[new_author_name]', nil,
-            placeholder: "Comma separated (e.g. John Smith, Jane Doe)",
-            style: "width:100%; padding:10px;" %>
-      </div>
-    </div>
+      <div class="form-group">
+        <label style="font-weight: bold; margin-bottom: 10px; display: block;">Categories</label>
 
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+          <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Categories:</p>
 
-    <div class="form-group">
-      <label style="font-weight: bold; margin-bottom: 10px; display: block;">Categories</label>
+          <div class="checkbox-group">
+            <% Category.order(:name).each do |category| %>
+              <div class="checkbox-item">
+                <input type="checkbox" 
+                       name="book[category_ids][]" 
+                       value="<%= category.id %>" 
+                       id="category_<%= category.id %>"
+                       <%= 'checked' if @book.category_ids.include?(category.id) %>>
+                <label for="category_<%= category.id %>"><%= category.name %></label>
+              </div>
+            <% end %>
+          </div>
+        </div>
 
- 
-      <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
-        <p style="margin-bottom: 10px; font-weight: bold; color: #555;">Select Existing Categories:</p>
-
-        <div class="checkbox-group">
-          <%= f.collection_check_boxes :category_ids, Category.order(:name), :id, :name do |b| %>
-            <div class="checkbox-item">
-              <%= b.check_box %>
-              <%= b.label %>
-            </div>
-          <% end %>
+        <div style="background: #fff3e0; padding: 15px; border-radius: 4px; border: 2px solid #ff9800;">
+          <p style="font-weight: bold; color: #ff9800;">Add New Categories:</p>
+          <input type="text" name="book[new_category_name]"
+                 placeholder="Comma separated (e.g. Mystery, Thriller)"
+                 style="width:100%; padding:10px;">
         </div>
       </div>
 
-
-      <div style="background: #fff3e0; padding: 15px; border-radius: 4px; border: 2px solid #ff9800;">
-        <p style="font-weight: bold; color: #ff9800;">Add New Categories:</p>
-        <%= text_field_tag 'book[new_category_name]', nil,
-            placeholder: "Comma separated (e.g. Mystery, Thriller)",
-            style: "width:100%; padding:10px;" %>
-      </div>
-    </div>
-
-    <%= f.submit "Update Book", class: "btn" %>
-    <%= link_to "Cancel", @book, class: "btn btn-secondary" %>
-  <% end %>
+      <button type="submit" class="btn">Update Book</button>
+      <%= link_to "Cancel", @book, class: "btn btn-secondary" %>
+    </form>
+  </div>
 </div>
 
 <style>
+  .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
   .checkbox-group {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));

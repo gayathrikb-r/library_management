@@ -1,82 +1,65 @@
 <h1>📖 Borrowings</h1>
 
-<% if librarian_signed_in? %>
-  <div class="card" style="margin-bottom: 15px;">
-    <div style="display: flex; gap: 10px;">
-      <%= link_to "All",
-          borrowings_path(member_id: params[:member_id]),
-          class: "btn #{params[:filter].nil? ? 'btn-success' : ''}" %>
-
-      <%= link_to "Active",
-          borrowings_path(filter: 'active', member_id: params[:member_id]),
-          class: "btn #{params[:filter] == 'active' ? 'btn-success' : ''}" %>
-
-      <%= link_to "Overdue",
-          borrowings_path(filter: 'overdue', member_id: params[:member_id]),
-          class: "btn #{params[:filter] == 'overdue' ? 'btn-success' : ''}" %>
-
-      <%= link_to "Returned",
-          borrowings_path(filter: 'returned', member_id: params[:member_id]),
-          class: "btn #{params[:filter] == 'returned' ? 'btn-success' : ''}" %>
+<div data-controller="borrowings" 
+     data-borrowings-filter-value="<%= params[:filter] %>"
+     data-borrowings-member-id-value="<%= params[:member_id] %>">
+  
+  <% if librarian_signed_in? %>
+    <div class="card" style="margin-bottom: 15px;">
+      <div style="display: flex; gap: 10px;">
+        <button class="btn <%= params[:filter].nil? ? 'btn-success' : '' %>" 
+                data-action="click->borrowings#setFilter" 
+                data-filter="">
+          All
+        </button>
+        <button class="btn <%= params[:filter] == 'active' ? 'btn-success' : '' %>" 
+                data-action="click->borrowings#setFilter" 
+                data-filter="active">
+          Active
+        </button>
+        <button class="btn <%= params[:filter] == 'overdue' ? 'btn-success' : '' %>" 
+                data-action="click->borrowings#setFilter" 
+                data-filter="overdue">
+          Overdue
+        </button>
+        <button class="btn <%= params[:filter] == 'returned' ? 'btn-success' : '' %>" 
+                data-action="click->borrowings#setFilter" 
+                data-filter="returned">
+          Returned
+        </button>
+      </div>
     </div>
-  </div>
-<% end %>
-
-
-<div class="card">
-  <% if @borrowings.any? %>
-    <table class="table table-striped">
-      <thead>
-        <tr>
-          <% if librarian_signed_in? %>
-            <th>Member</th>
-          <% end %>
-          <th>Book</th>
-          <th>Borrowed Date</th>
-          <th>Due Date</th>
-          <th>Return Date</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @borrowings.each do |borrowing| %>
-          <tr>
-            <% if librarian_signed_in? %>
-              <td><%= link_to borrowing.member.name, member_path(borrowing.member) %></td>
-            <% end %>
-
-            <td><%= link_to borrowing.book.title, borrowing.book %></td>
-            <td><%= borrowing.borrowed_date.strftime("%b %d, %Y") %></td>
-            <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
-            <td><%= borrowing.returned_date&.strftime("%b %d, %Y") || "Not returned" %></td>
-            <td>
-              <% case borrowing.status %>
-              <% when "returned" %>
-                <span class="badge badge-success">Returned</span>
-              <% when "overdue" %>
-                <span class="badge badge-danger">Overdue (<%= borrowing.days_overdue %> days)</span>
-              <% else %>
-                <span class="badge badge-info">Active</span>
-              <% end %>
-            </td>
-            <td>
-              <div class="action-buttons" style="display: flex; gap: 5px;">
-                <%= link_to "Details", borrowing_path(borrowing), class: "btn btn-secondary btn-sm" %>
-
-                <% if librarian_signed_in? && borrowing.returned_date.nil? %>
-                  <%= link_to "Return",
-                      return_book_borrowing_path(borrowing),
-                      data: { turbo_method: :patch, turbo_confirm: "Mark this book as returned?" },
-                      class: "btn btn-success btn-sm" %>
-                <% end %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No borrowings found.</p>
   <% end %>
+
+  <div class="card" data-borrowings-target="table">
+    <!-- Borrowings will be loaded here -->
+  </div>
 </div>
+
+<style>
+  .table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .table th,
+  .table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  .table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  .table-striped tbody tr:nth-of-type(odd) {
+    background-color: #f9f9f9;
+  }
+  
+  .action-buttons {
+    display: flex;
+    gap: 5px;
+  }
+</style>

@@ -1,90 +1,52 @@
-<div class="card">
-  <h1><%= @author.name %></h1>
+<div 
+  data-controller="author-show" 
+  data-author-show-author-id-value="<%= @author.id %>"
+  data-member-signed-in="<%= member_signed_in? %>"
+  data-librarian-signed-in="<%= librarian_signed_in? %>"
+  data-current-member-id="<%= current_member&.id %>">
+  
+  <div class="card" data-author-show-target="authorDetails">
+    <!-- Author details will be loaded here -->
+  </div>
 
-  <% if @author.birth_date %>
-    <p><strong>Born:</strong> <%= @author.birth_date.strftime("%B %d, %Y") %></p>
-  <% end %>
-
-  <h3>Biography</h3>
-  <p><%= @author.biography.presence || "No biography available." %></p>
-
-  <% if librarian_signed_in? %>
-    <div style="margin-top: 20px;">
-      <%= link_to "Edit", edit_author_path(@author), class: "btn" %>
-      <%= link_to "Delete", @author, data: { turbo_method: :delete, turbo_confirm: "Are you sure?" }, class: "btn btn-danger" %>
-    </div>
-  <% end %>
+  <div class="card" data-author-show-target="reviewsList">
+    <!-- Reviews will be loaded here -->
+  </div>
 </div>
 
-<div class="card">
-  <h2>Reviews (<%= @reviews.size %>)</h2>
+<style>
+  .form-group {
+    margin-bottom: 15px;
+  }
 
-  <% if member_signed_in? && !@reviews.exists?(reviewer: current_member) %>
-    <h3>Write a Review</h3>
-    <%= form_with model: [@author, @review] do |f| %>
-      <div class="form-group">
-        <%= f.label :rating %>
-        <%= f.select :rating, (1..5).to_a.reverse, {}, { required: true } %>
-      </div>
-      <div class="form-group">
-        <%= f.label :comment %>
-        <%= f.text_area :comment, rows: 4, required: true %>
-      </div>
-      <%= f.submit "Submit Review", class: "btn" %>
-    <% end %>
-  <% end %>
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
 
-  <% if @reviews.any? %>
-    <% @reviews.each do |review| %>
-      <div class="review-card">
-        <p>
-          <strong><%= review.reviewer&.name || "Anonymous" %></strong>
-          <span class="star-rating"><%= "⭐" * review.rating %></span>
-          <% if review.pending? %>
-            <span class="badge badge-warning">Pending</span>
-          <% end %>
-        </p>
-        <p><%= review.comment %></p>
-        <p class="review-date"><%= review.created_at.strftime("%B %d, %Y") %></p>
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
 
-        <!-- MEMBER: edit / delete own reviews -->
-        <% if member_signed_in? && review.reviewer == current_member %>
-          <%= link_to "Edit",
-              edit_review_path(review),
-              class: "btn btn-sm" %>
+  .star-rating {
+    color: #f39c12;
+  }
 
-          <%= link_to "Delete",
-              review_path(review),
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-              class: "btn btn-danger btn-sm" %>
-        <% end %>
+  .review-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
 
-        <!-- MEMBER: flag others' reviews -->
-        <% if member_signed_in? && review.reviewer != current_member %>
-          <%= link_to "Flag",
-              flag_review_path(review),
-              data: { turbo_method: :patch, turbo_confirm: "Flag this review?" },
-              class: "btn btn-warning btn-sm" %>
-        <% end %>
-
-        <!-- LIBRARIAN: approve / delete reviews -->
-        <% if librarian_signed_in? %>
-          <% unless review.approved? %>
-            <%= link_to "Approve",
-                approve_review_path(review),
-                data: { turbo_method: :patch },
-                class: "btn btn-success btn-sm" %>
-          <% end %>
-
-          <%= link_to "Delete",
-              review_path(review),
-              data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-              class: "btn btn-danger btn-sm" %>
-        <% end %>
-
-      </div>
-    <% end %>
-  <% else %>
-    <p>No reviews yet.</p>
-  <% end %>
-</div>
+  .review-date {
+    color: #666;
+    font-size: 0.9em;
+  }
+</style>

@@ -1,123 +1,19 @@
-<div class="card">
-  <h1><%= @book.title %></h1>
+<div 
+  data-controller="book-show" 
+  data-book-show-book-id-value="<%= @book.id %>"
+  data-member-signed-in="<%= member_signed_in? %>"
+  data-librarian-signed-in="<%= librarian_signed_in? %>"
+  data-current-member-id="<%= current_member&.id %>">
+  
+  <div class="card" data-book-show-target="bookDetails">
+    <!-- Book details will be loaded here -->
+  </div>
 
-  <p><strong>Authors:</strong>
-    <%= @book.authors.map { |a| link_to a.name, a }.join(", ").html_safe %>
-  </p>
-
-  <p><strong>ISBN:</strong> <%= @book.isbn || "N/A" %></p>
-  <p><strong>Published:</strong> <%= @book.publication_year %></p>
-
-  <p><strong>Categories:</strong>
-    <%= @book.categories.map { |c| link_to c.name, c }.join(", ").html_safe %>
-  </p>
-
-  <p><strong>Total Copies:</strong> <%= @book.total_copies %></p>
-  <p><strong>Available:</strong> <%= @book.available_copies %></p>
-
-  <% if @book.average_rating.present? %>
-    <p class="star-rating">
-      <%= "⭐" * @book.average_rating.round %>
-      Average Rating: <%= @book.average_rating.round(1) %>/5
-      (<%= @book.reviews_count %> reviews)
-    </p>
-  <% end %>
-
-  <h3>Description</h3>
-  <p><%= @book.description.presence || "No description available." %></p>
-
-  <% if member_signed_in? %>
-    <div class="action-row">
-      <% if @book.available? %>
-        <%= link_to "📖 Borrow This Book", borrow_book_path(@book),
-            data: { turbo_method: :post }, class: "btn btn-success" %>
-      <% else %>
-        <%= link_to "🔖 Reserve This Book", reserve_book_path(@book),
-            data: { turbo_method: :post }, class: "btn" %>
-      <% end %>
-    </div>
-  <% end %>
-
-  <% if librarian_signed_in? %>
-    <div class="action-row">
-      <%= link_to "Edit", edit_book_path(@book), class: "btn" %>
-      <%= link_to "Delete", @book,
-          data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-          class: "btn btn-danger" %>
-    </div>
-  <% end %>
+  <div class="card" data-book-show-target="reviewsList">
+    <!-- Reviews will be loaded here -->
+  </div>
 </div>
 
-<div class="card">
-  <h2>Reviews (<%= @reviews.size %>)</h2>
-
-  <% if member_signed_in? && !@book.reviews.exists?(reviewer: current_member) %>
-    <h3>Write a Review</h3>
-    <%= form_with model: [@book, @review] do |f| %>
-      <div class="form-group">
-        <%= f.label :rating %>
-        <%= f.select :rating, (1..5).to_a.reverse, {}, class: "form-control", required: true %>
-      </div>
-      <div class="form-group">
-        <%= f.label :comment %>
-        <%= f.text_area :comment, rows: 4, class: "form-control", required: true %>
-      </div>
-      <%= f.submit "Submit Review", class: "btn" %>
-    <% end %>
-  <% end %>
-
-  <% if @reviews.any? %>
-  <% @reviews.each do |review| %>
-    <div class="review-card">
-      <p>
-        <strong><%= review.reviewer&.name || "Anonymous" %></strong>
-        <span class="star-rating"><%= "⭐" * review.rating %></span>
-        <% if review.pending? %>
-          <span class="badge badge-warning">Pending</span>
-        <% end %>
-      </p>
-      <p><%= review.comment %></p>
-      <p class="review-date"><%= review.created_at.strftime("%B %d, %Y") %></p>
-
-      <!-- MEMBER: edit / delete own -->
-      <% if member_signed_in? && review.reviewer == current_member %>
-        <%= link_to "Edit",
-            edit_review_path(review),
-            class: "btn btn-sm" %>
-        <%= link_to "Delete",
-            review_path(review),
-            data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-            class: "btn btn-danger btn-sm" %>
-      <% end %>
-
-      <!-- MEMBER: flag others -->
-      <% if member_signed_in? && review.reviewer != current_member %>
-        <%= link_to "Flag",
-            flag_review_path(review),
-            data: { turbo_method: :patch, turbo_confirm: "Flag this review?" },
-            class: "btn btn-warning btn-sm" %>
-      <% end %>
-
-      <!-- LIBRARIAN: approve / delete -->
-      <% if librarian_signed_in? %>
-        <% unless review.approved? %>
-          <%= link_to "Approve",
-              approve_review_path(review),
-              data: { turbo_method: :patch },
-              class: "btn btn-success btn-sm" %>
-        <% end %>
-        <%= link_to "Delete",
-            review_path(review),
-            data: { turbo_method: :delete, turbo_confirm: "Are you sure?" },
-            class: "btn btn-danger btn-sm" %>
-      <% end %>
-    </div>
-  <% end %>
-<% else %>
-  <p>No reviews yet.</p>
-<% end %>
-
-</div>
 <style>
   .form-control {
     width: 100%;
@@ -132,5 +28,21 @@
 
   .star-rating {
     color: #f39c12;
+  }
+
+  .review-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+
+  .review-date {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .action-row {
+    margin-top: 20px;
   }
 </style>

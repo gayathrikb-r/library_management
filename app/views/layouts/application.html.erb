@@ -21,7 +21,10 @@
     <%= javascript_importmap_tags %>
   </head>
 
-  <body >
+  <body 
+  data-member-signed-in="<%= member_signed_in? %>"
+  data-librarian-signed-in="<%= librarian_signed_in? %>"
+  data-current-member-id="<%= current_member&.id %>">
 
     <header>
       <nav>

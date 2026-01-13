@@ -1,17 +1,9 @@
-# This file should ensure the existence of records required to run the application in every environment (production,
-# development, test). The code here should be idempotent so that it can be executed at any point in every environment.
-# The data can then be loaded with the bin/rails db:seed command (or created alongside the database with db:setup).
-#
-# Example:
-#
-#   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
-#     MovieGenre.find_or_create_by!(name: genre_name)
-#   end
-# Clear existing data
-# Clear existing data
-# Clear existing data (be careful in production!)
-# Clear existing data (be careful in production!)
+# db/seeds.rb
+# This file ensures the existence of records required to run the application.
+# The code is idempotent so it can be executed at any point.
+
 puts "🗑️  Cleaning database..."
+# Order matters to avoid foreign key constraint errors
 Review.destroy_all
 Borrowing.destroy_all
 Reservation.destroy_all
@@ -42,7 +34,7 @@ puts "\n📚 Creating Librarians..."
 librarian1 = Librarian.create!(
   name: 'Sarah Johnson',
   email: 'sarah@library.com',
-  phone: '9876543210',  # 10 digit phone number
+  phone: '9876543210',
   password: 'password123',
   password_confirmation: 'password123'
 )
@@ -50,7 +42,7 @@ librarian1 = Librarian.create!(
 librarian2 = Librarian.create!(
   name: 'Michael Chen',
   email: 'michael@library.com',
-  phone: '9876543211',  # 10 digit phone number
+  phone: '9876543211',
   password: 'password123',
   password_confirmation: 'password123'
 )
@@ -59,27 +51,15 @@ puts "✅ 2 Librarians created"
 # Create Categories
 puts "\n📂 Creating Categories..."
 categories = [
-  'Fiction',
-  'Non-Fiction',
-  'Science Fiction',
-  'Mystery',
-  'Romance',
-  'Biography',
-  'History',
-  'Science',
-  'Technology',
-  'Self-Help'
+  'Fiction', 'Non-Fiction', 'Science Fiction', 'Mystery', 'Romance',
+  'Biography', 'History', 'Science', 'Technology', 'Self-Help'
 ].map { |name| Category.create!(name: name) }
 puts "✅ #{categories.count} Categories created"
 
 # Create Tags
 puts "\n🏷️  Creating Tags..."
 tags = [
-  'Bestseller',
-  'Award Winner',
-  'Classic',
-  'New Release',
-  'Popular'
+  'Bestseller', 'Award Winner', 'Classic', 'New Release', 'Popular'
 ].map { |name| Tag.create!(name: name) }
 puts "✅ #{tags.count} Tags created"
 
@@ -103,7 +83,7 @@ puts "\n👥 Creating Members..."
   Member.create!(
     name: "Member #{i+1}",
     email: "member#{i+1}@example.com",
-    phone: "98765432#{10+i}",  # 10 digit phone numbers
+    phone: "98765432#{10+i}",
     bio: "I love reading books and exploring new genres.",
     birth_date: Date.today - rand(18..80).years,
     favorite_author: authors.sample,
@@ -139,28 +119,32 @@ books_data.each do |book_data|
     description: book_data[:description]
   )
   
-  # Add author
   BookAuthor.create!(book: book, author: book_data[:author])
   
-  # Add categories
   book_data[:categories].each do |category|
     BookCategory.create!(book: book, category: category)
   end
   
-  # Add random tags
   book.tags << tags.sample(rand(1..3))
 end
 
 books = Book.all
 puts "✅ #{books.count} Books created"
+
 puts "\n📚 Creating Borrowings..."
 
 # -------------------------------
 # 1️⃣ Overdue borrowings
 # -------------------------------
-3.times do
-  book = books.sample
-  next if book.total_copies <= 0 # just to avoid negative numbers
+# FIX: Only pick books that definitely have available copies
+available_books = books.select { |b| b.available_copies > 0 }
+
+# Pick up to 3 books, but don't error if we run out of inventory
+sample_size = [3, available_books.size].min 
+
+available_books.sample(sample_size).each do |book|
+  # Safety check again just in case
+  next unless book.available_copies > 0
 
   Borrowing.new(
     member: members.sample,
@@ -169,13 +153,16 @@ puts "\n📚 Creating Borrowings..."
     borrowed_date: rand(25..40).days.ago.to_date,
     due_date: rand(10..15).days.ago.to_date,
     status: :overdue
-  ).save!(validate: false)  # skip validations
+  ).save!(validate: false)
+  
+  # Decrement availability
   book.decrement!(:available_copies)
 end
 
 # -------------------------------
 # 2️⃣ Returned borrowings
 # -------------------------------
+# Returned books don't need to consume a copy, so we can pick any book
 7.times do
   book = books.sample
   Borrowing.new(
@@ -192,9 +179,12 @@ end
 # -------------------------------
 # 3️⃣ Active borrowings
 # -------------------------------
-5.times do
-  book = books.sample
-  next if book.available_copies <= 0
+# Refresh list of available books because previous loop consumed some
+available_books = books.select { |b| b.reload.available_copies > 0 }
+sample_size = [5, available_books.size].min
+
+available_books.sample(sample_size).each do |book|
+  next unless book.available_copies > 0
 
   Borrowing.create!(
     member: members.sample,
@@ -204,6 +194,8 @@ end
     due_date: rand(1..10).days.from_now.to_date,
     status: :borrowed
   )
+  
+  # Ensure we decrement so the database stays accurate
   book.decrement!(:available_copies)
 end
 
@@ -216,16 +208,16 @@ puts "\n📋 Creating Reservations..."
 # Pending reservations
 # -------------------------------
 4.times do
+  # Pick any book, even if no copies available (reservations are allowed then)
   book = books.sample
-  next if book.total_copies <= 0
-
+  
   Reservation.new(
     member: members.sample,
     book: book,
     reservation_date: Date.today,
     expires_at: 7.days.from_now,
     status: :pending
-  ).save!(validate: false) # skip validations
+  ).save!(validate: false)
 end
 
 # -------------------------------
@@ -240,9 +232,8 @@ end
     notified_at: 3.days.ago,
     expires_at: 4.days.from_now,
     status: :fulfilled
-  ).save!(validate: false) # skip validations
+  ).save!(validate: false)
 end
-
 
 puts "✅ #{Reservation.count} Reservations created"
 
@@ -250,12 +241,13 @@ puts "✅ #{Reservation.count} Reservations created"
 puts "\n⭐ Creating Reviews..."
 
 # Approved reviews
+# Loop safely: Only review books that exist
 books.sample(8).each do |book|
   Review.create!(
     reviewer: members.sample,
     reviewable: book,
     rating: rand(3..5),
-    comment: "This book was #{['amazing', 'fantastic', 'great', 'wonderful', 'excellent'].sample}! I really enjoyed reading it and would recommend it to others.",
+    comment: "This book was #{['amazing', 'fantastic', 'great', 'wonderful', 'excellent'].sample}! I really enjoyed reading it.",
     status: :approved
   )
 end
@@ -274,10 +266,13 @@ end
 puts "✅ #{Review.count} Reviews created"
 
 # Update book ratings
+puts "🔄 Recalculating Book Ratings..."
 Book.find_each do |book|
   approved_reviews = book.reviews.approved
   if approved_reviews.any?
-    book.update!(
+    # Using update_columns here is safer during seeding to avoid triggering other validations
+    # that might fail if data is slightly imperfect.
+    book.update_columns(
       average_rating: approved_reviews.average(:rating).round(2),
       reviews_count: approved_reviews.count
     )
@@ -285,7 +280,7 @@ Book.find_each do |book|
 end
 
 puts "\n" + "="*50
-puts "🎉 SEED COMPLETED!"
+puts "🎉 SEED COMPLETED SUCCESSFULLY!"
 puts "="*50
 puts "\n📊 Summary:"
 puts "  • Admin Users: #{AdminUser.count}"
@@ -301,7 +296,6 @@ puts "  • Reviews: #{Review.count}"
 puts "\n🔑 Login Credentials:"
 puts "  Admin:     admin@library.com / password123"
 puts "  Librarian: sarah@library.com / password123"
-puts "  Librarian: michael@library.com / password123"
-puts "  Members:   member1@example.com (through member10@example.com) / password123"
+puts "  Members:   member1@example.com / password123"
 puts "\n✅ All set! Start your Rails server and log in!"
 puts "="*50

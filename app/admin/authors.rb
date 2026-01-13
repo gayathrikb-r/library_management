@@ -1,7 +1,7 @@
 ActiveAdmin.register Author do
   includes :books
   permit_params :name, :biography, :birth_date
-
+  config.per_page = [10, 20, 50, 100]
   index do
     selectable_column
     id_column

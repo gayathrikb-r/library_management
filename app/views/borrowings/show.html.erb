@@ -1,28 +1,9 @@
-<div class="card">
-  <h1>Borrowing Details</h1>
-
-  <p><strong>Member:</strong> <%= link_to @borrowing.member.name, @borrowing.member %></p>
-  <p><strong>Book:</strong> <%= link_to @borrowing.book.title, @borrowing.book %></p>
-  <p><strong>Borrowed Date:</strong> <%= @borrowing.borrowed_date.strftime("%B %d, %Y") %></p>
-  <p><strong>Due Date:</strong> <%= @borrowing.due_date.strftime("%B %d, %Y") %></p>
-  <p><strong>Return Date:</strong> <%= @borrowing.returned_date&.strftime("%B %d, %Y") || "Not returned yet" %></p>
-
-  <p><strong>Status:</strong> 
-    <% case @borrowing.status %>
-    <% when 'returned' %>
-      <span class="badge badge-success">Returned</span>
-    <% when 'overdue' %>
-      <span class="badge badge-danger">Overdue by <%= @borrowing.days_overdue %> days</span>
-    <% else %>
-      <span class="badge badge-info">Active</span>
-    <% end %>
-  </p>
-
-  <% if librarian_signed_in? && @borrowing.status == 'borrowed' %>
-    <%= link_to "Mark as Returned", return_book_borrowing_path(@borrowing), 
-        data: { turbo_method: :patch, turbo_confirm: "Confirm return?" }, 
-        class: "btn btn-success" %>
-  <% end %>
-
-  <%= link_to "Back", borrowings_path, class: "btn btn-secondary" %>
+<div class="card" 
+     data-controller="borrowing-show" 
+     data-borrowing-show-borrowing-id-value="<%= @borrowing.id %>"
+     data-librarian-signed-in="<%= librarian_signed_in? %>">
+  
+  <div data-borrowing-show-target="details">
+    <!-- Borrowing details will be loaded here -->
+  </div>
 </div>

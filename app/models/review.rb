@@ -29,7 +29,7 @@ class Review < ApplicationRecord
   end
 
   def flag!
-    flagged!
+    update(status: :pending)
   end
 
   private

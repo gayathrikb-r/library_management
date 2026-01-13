@@ -1,39 +1,8 @@
-<div class="card">
-  <h1>Reservation Details</h1>
-
-  <p>
-    <strong>Member:</strong>
-    <%= link_to @reservation.member.name, @reservation.member %>
-  </p>
-
-  <p>
-    <strong>Book:</strong>
-    <%= link_to @reservation.book.title, @reservation.book %>
-  </p>
-
-  <p>
-    <strong>Reserved On:</strong>
-    <%= @reservation.created_at.strftime("%B %d, %Y") %>
-  </p>
-
-  <p>
-    <strong>Status:</strong>
-    <% case @reservation.status %>
-    <% when "pending" %>
-      <span class="badge badge-warning">Pending</span>
-    <% when "fulfilled" %>
-      <span class="badge badge-success">Fulfilled</span>
-    <% when "cancelled" %>
-      <span class="badge badge-danger">Cancelled</span>
-    <% end %>
-  </p>
-
-  <% if @reservation.pending? %>
-    <%= link_to "Cancel Reservation",
-        cancel_reservation_path(@reservation),
-        data: { turbo_method: :patch, turbo_confirm: "Are you sure?" },
-        class: "btn btn-danger" %>
-  <% end %>
-
-  <%= link_to "Back to Reservations", reservations_path, class: "btn btn-secondary" %>
+<div class="card" 
+     data-controller="reservation-show" 
+     data-reservation-show-reservation-id-value="<%= @reservation.id %>">
+  
+  <div data-reservation-show-target="details">
+    <!-- Reservation details will be loaded here -->
+  </div>
 </div>

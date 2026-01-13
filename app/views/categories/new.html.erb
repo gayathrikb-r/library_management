@@ -1,24 +1,36 @@
 <div class="card">
   <h1>Add New Category</h1>
-  
-  <%= form_with model: @category do |f| %>
-    <% if @category.errors.any? %>
-      <div class="flash alert">
-        <h3><%= pluralize(@category.errors.count, "error") %>:</h3>
-        <ul>
-          <% @category.errors.full_messages.each do |message| %>
-            <li><%= message %></li>
-          <% end %>
-        </ul>
+
+  <div data-controller="category-form" data-category-form-is-edit-value="false">
+    <div data-category-form-target="errors"></div>
+    
+    <form data-action="submit->category-form#submit">
+      <div class="form-group">
+        <label>Name *</label>
+        <input type="text" name="category[name]" required>
       </div>
-    <% end %>
-    
-    <div class="form-group">
-      <%= f.label :name %>
-      <%= f.text_field :name, required: true %>
-    </div>
-    
-    <%= f.submit "Create Category", class: "btn" %>
-    <%= link_to "Cancel", categories_path, class: "btn btn-secondary" %>
-  <% end %>
+
+      <button type="submit" class="btn">Create Category</button>
+      <%= link_to "Cancel", categories_path, class: "btn btn-secondary" %>
+    </form>
+  </div>
 </div>
+
+<style>
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .form-group input {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+</style>

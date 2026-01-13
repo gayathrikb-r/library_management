@@ -1,35 +1,28 @@
 <h1>Authors</h1>
 
-<div class="card">
-  <%= form_with url: authors_path, method: :get do |f| %>
-    <div style="display: flex; gap: 10px;">
-      <%= f.text_field :search, placeholder: "Search authors...", 
-          value: params[:search], style: "flex: 1;" %>
-      <%= f.submit "Search", class: "btn" %>
-      <%= link_to "Clear", authors_path, class: "btn btn-secondary" %>
-    </div>
-  <% end %>
-</div>
-
-<% if  librarian_signed_in? %>
-  <%= link_to "➕ Add New Author", new_author_path, class: "btn btn-success mb-20" %>
-<% end %>
-
-<div class="grid">
-  <% @authors.each do |author| %>
-    <div class="card">
-      <h3><%= link_to author.name, author %></h3>
-      <p><strong>Books:</strong> <%= author.books_count %></p>
-      <% if author.birth_date %>
-        <p><strong>Born:</strong> <%= author.birth_date.strftime("%B %d, %Y") %></p>
-      <% end %>
-      <%= link_to "View Details", author, class: "btn mt-10" %>
-    </div>
-  <% end %>
-</div>
-
-<% if @authors.empty? %>
+<div data-controller="authors">
   <div class="card">
-    <p>No authors found.</p>
+    <form data-action="submit->authors#search">
+      <div style="display: flex; gap: 10px;">
+        <input 
+          type="text"
+          name="search"
+          data-authors-target="search"
+          placeholder="Search authors..."
+          style="flex: 1;">
+        <button type="submit" class="btn">Search</button>
+        <button type="button" data-action="click->authors#clear" class="btn btn-secondary">Clear</button>
+      </div>
+    </form>
   </div>
-<% end %>
+
+  <% if librarian_signed_in? %>
+    <%= link_to "➕ Add New Author", new_author_path, class: "btn btn-success mb-20" %>
+  <% end %>
+
+  <div class="grid" data-authors-target="grid">
+    <!-- Authors will be loaded here via JavaScript -->
+  </div>
+
+  <div data-authors-target="pagination"></div>
+</div>

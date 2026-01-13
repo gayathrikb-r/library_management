@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  use_doorkeeper
   devise_for :admin_users, ActiveAdmin::Devise.config
   # Member namespace
   namespace :member do
@@ -42,6 +43,10 @@ end
       post :borrow
       post :reserve
     end
+    collection do
+        get :popular
+        get :highest_rated
+      end
     resources :reviews, only: [:create]
   end
 
@@ -60,7 +65,11 @@ end
     member { patch :cancel }
   end
   
-  resources :members, only: [:show,:edit,:update]
+    resources :members, only: [:show, :edit, :update] do
+      member do
+        get :activity
+      end
+    end
 
   # Reviews actions
   resources :reviews, only: [:edit, :update, :destroy] do
@@ -87,6 +96,10 @@ namespace :api do
         post :borrow
         post :reserve
       end
+      collection do
+        get :popular
+        get :highest_rated
+      end
       resources :reviews, only: [:create]
     end
 
@@ -105,7 +118,11 @@ namespace :api do
       member { patch :cancel }
     end
 
-    resources :members, only: [:show, :edit, :update]
+    resources :members, only: [:show, :edit, :update] do
+      member do
+        get :activity
+      end
+    end
 
     # Reviews actions
     resources :reviews, only: [:edit, :update, :destroy] do
@@ -114,9 +131,12 @@ namespace :api do
         patch :approve  # librarians
       end
     end
-
+   namespace :member do
+    get "dashboard/show", to: "dashboard#show", as: :dashboard
+  end
     # Librarian-specific reservations
     namespace :librarians do
+      get "dashboard", to: "dashboard#index"
       resources :reservations, only: [:index] do
         member do
           patch :fulfill

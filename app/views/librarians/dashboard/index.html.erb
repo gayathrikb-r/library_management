@@ -1,206 +1,110 @@
-<h1>📊 Librarian Dashboard</h1>
+<div data-controller="librarian-dashboard">
+  <h1>📊 Librarian Dashboard</h1>
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
-  <div class="card">
-    <h3>Total Books</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #007bff;"><%= @total_books %></p>
+  <!-- Stats Grid -->
+  <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;" 
+       data-librarian-dashboard-target="stats">
+    <!-- Stats will be loaded here -->
   </div>
 
+  <hr>
+
+  <!-- Overdue Books Section -->
   <div class="card">
-    <h3>Total Members</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #28a745;"><%= @total_members %></p>
+    <h2>⚠️ Overdue Books</h2>
+    <div data-librarian-dashboard-target="overdueBooks">
+      <!-- Overdue books will be loaded here -->
+    </div>
   </div>
 
+  <hr>
+
+  <!-- Pending Reviews Section -->
   <div class="card">
-    <h3>Active Borrowings</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #17a2b8;"><%= @active_borrowings %></p>
+    <h2>📝 Pending Reviews</h2>
+    <div data-librarian-dashboard-target="pendingReviews">
+      <!-- Pending reviews will be loaded here -->
+    </div>
   </div>
 
+  <hr>
+
+  <!-- Recent Borrowings Section -->
   <div class="card">
-    <h3>Overdue Books</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #dc3545;"><%= @overdue_borrowings %></p>
+    <h2>📚 Recent Borrowings</h2>
+    <div data-librarian-dashboard-target="recentBorrowings">
+      <!-- Recent borrowings will be loaded here -->
+    </div>
   </div>
 
+  <hr>
+
+  <!-- Pending Reservations Section -->
   <div class="card">
-    <h3>Pending Reservations</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #ffc107;"><%= @pending_reservations_count %></p>
+    <h2>📌 Pending Reservations</h2>
+    <div data-librarian-dashboard-target="pendingReservations">
+      <!-- Pending reservations will be loaded here -->
+    </div>
   </div>
 
-  <div class="card">
-    <h3>Pending Reviews</h3>
-    <p style="font-size: 2em; font-weight: bold; color: #6c757d;"><%= @pending_reviews_count %></p>
+  <hr>
+
+  <!-- Quick Actions -->
+  <div style="margin-top: 20px;">
+    <%= link_to "➕ Add New Book", new_book_path, class: "btn", 
+        style: "background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;" %>
+    <%= link_to "📚 Manage Books", books_path, class: "btn", 
+        style: "background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-left: 10px;" %>
   </div>
 </div>
 
-<hr>
-
-<div class="card">
-  <h2>⚠️ Overdue Books</h2>
-
-  <% if @overdue_books.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Book</th>
-          <th>Due Date</th>
-          <th>Days Overdue</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @overdue_books.each do |borrowing| %>
-          <tr>
-            <td><%= borrowing.member.name %></td>
-            <td><%= borrowing.book.title %></td>
-            <td><%= borrowing.due_date.strftime("%b %d, %Y") %></td>
-            <td>
-              <span class="badge badge-danger">
-                <%= borrowing.days_overdue %> days
-              </span>
-            </td>
-            <td>
-              <%= link_to "View", borrowing, class: "btn" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No overdue books! 🎉</p>
-  <% end %>
-</div>
-
-<hr>
-<div class="card">
-  <h2>📝 Pending Reviews</h2>
-
-  <% if @pending_reviews.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Reviewer</th>
-          <th>Item</th>
-          <th>Rating</th>
-          <th>Comment</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <% @pending_reviews.each do |review| %>
-          <tr>
-            <td><%= review.reviewer.name %></td>
-            <td>
-              <%= link_to(
-                    review.reviewable.try(:title) || review.reviewable.try(:name),
-                    review.reviewable
-                  ) %>
-            </td>
-            <td><%= review.rating %>/5</td>
-            <td><%= truncate(review.comment, length: 80) %></td>
-            <td>
-              <%= link_to "Approve",
-                  approve_review_path(review),
-                  data: { turbo_method: :patch },
-                  class: "btn btn-success btn-sm" %>
-
-              <%= link_to "Delete",
-                  review_path(review),
-                  data: { turbo_method: :delete, turbo_confirm: "Delete this review?" },
-                  class: "btn btn-danger btn-sm" %>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No pending reviews 🎉</p>
-  <% end %>
-</div>
-
-<hr>
-<div class="card">
-  <h2>📚 Recent Borrowings</h2>
-
-  <table>
-    <thead>
-      <tr>
-        <th>Member</th>
-        <th>Book</th>
-        <th>Borrowed On</th>
-        <th>Status</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% @recent_borrowings.each do |borrowing| %>
-        <tr>
-          <td><%= borrowing.member.name %></td>
-          <td><%= borrowing.book.title %></td>
-          <td><%= borrowing.created_at.strftime("%b %d, %Y") %></td>
-          <td>
-            <% if borrowing.active? %>
-              <span class="badge badge-info">Active</span>
-            <% elsif borrowing.overdue? %>
-              <span class="badge badge-danger">Overdue</span>
-            <% else %>
-              <span class="badge badge-success">Returned</span>
-            <% end %>
-          </td>
-        </tr>
-      <% end %>
-    </tbody>
-  </table>
-</div>
-
-<hr>
-<div class="card">
-  <h2>📌 Pending Reservations</h2>
-  <div id="flash_messages"></div>
-
-  <% if @pending_reservations.any? %>
-    <table>
-      <thead>
-        <tr>
-          <th>Member</th>
-          <th>Book</th>
-          <th>Reserved On</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% @pending_reservations.each do |reservation| %>
-          <tr id="<%= dom_id(reservation) %>">
-            <td><%= reservation.member.name %></td>
-            <td><%= link_to reservation.book.title, reservation.book %></td>
-            <td><%= reservation.created_at.strftime("%b %d, %Y") %></td>
-            <td>
-              <div class="action-buttons">
-                <%= button_to "Fulfill",
-                    fulfill_librarians_reservation_path(reservation),
-                    method: :patch,
-                    form: { data: { turbo_confirm: "Fulfill this reservation?" } },
-                    class: "btn btn-success" %>
-
-                <%= button_to "Cancel",
-                    cancel_librarians_reservation_path(reservation),
-                    method: :patch,
-                    form: { data: { turbo_confirm: "Cancel this reservation?" } },
-                    class: "btn btn-danger" %>
-              </div>
-            </td>
-          </tr>
-        <% end %>
-      </tbody>
-    </table>
-  <% else %>
-    <p>No pending reservations 🎉</p>
-  <% end %>
-</div>
-
-<hr>
-
-<div style="margin-top: 20px;">
-  <%= link_to "➕ Add New Book", new_book_path, class: "btn", style: "background: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block;" %>
-  <%= link_to "📚 Manage Books", books_path, class: "btn", style: "background: #6c757d; color: white; padding: 10px 20px; text-decoration: none; border-radius: 4px; display: inline-block; margin-left: 10px;" %>
-</div>
+<style>
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+  }
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+  }
+  
+  .badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85em;
+    font-weight: bold;
+  }
+  
+  .badge-success {
+    background-color: #28a745;
+    color: white;
+  }
+  
+  .badge-danger {
+    background-color: #dc3545;
+    color: white;
+  }
+  
+  .badge-info {
+    background-color: #17a2b8;
+    color: white;
+  }
+  
+  .badge-warning {
+    background-color: #ffc107;
+    color: #000;
+  }
+</style>

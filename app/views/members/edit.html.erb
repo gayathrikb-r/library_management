@@ -1,42 +1,54 @@
 <h1>✏️ Edit Profile</h1>
-<% if @member.errors.any? %>
-  <div class="flash alert">
-    <h4><%= pluralize(@member.errors.count, "error") %> prohibited this profile from being saved:</h4>
-    <ul>
-      <% @member.errors.full_messages.each do |message| %>
-        <li><%= message %></li>
-      <% end %>
-    </ul>
+
+<div data-controller="member-edit" data-member-edit-member-id-value="<%= @member.id %>">
+  <div data-member-edit-target="errors"></div>
+
+  <div class="card">
+    <form data-action="submit->member-edit#submit">
+      <div class="field">
+        <label>Name *</label>
+        <input type="text" name="member[name]" value="<%= @member.name %>" required>
+      </div>
+
+      <div class="field">
+        <label>Phone</label>
+        <input type="text" name="member[phone]" value="<%= @member.phone %>">
+      </div>
+
+      <div class="field">
+        <label>Bio</label>
+        <textarea name="member[bio]" rows="4"><%= @member.bio %></textarea>
+      </div>
+
+      <div class="field">
+        <label>Birth Date</label>
+        <input type="date" name="member[birth_date]" value="<%= @member.birth_date %>">
+      </div>
+
+      <div style="margin-top: 10px;">
+        <button type="submit" class="btn btn-success">Save Changes</button>
+        <%= link_to "Cancel", member_path(@member), class: "btn btn-secondary" %>
+      </div>
+    </form>
   </div>
-<% end %>
-
-<div class="card">
-  <%= form_with model: @member, local: true do |f| %>
-
-    <div class="field">
-      <%= f.label :name %>
-      <%= f.text_field :name, required: true %>
-    </div>
-
-    <div class="field">
-      <%= f.label :phone %>
-      <%= f.text_field :phone %>
-    </div>
-
-    <div class="field">
-      <%= f.label :bio %>
-      <%= f.text_area :bio, rows: 4 %>
-    </div>
-
-    <div class="field">
-      <%= f.label :birth_date %>
-      <%= f.date_field :birth_date %>
-    </div>
-
-    <div style="margin-top: 10px;">
-      <%= f.submit "Save Changes", class: "btn btn-success" %>
-      <%= link_to "Cancel", member_path(@member), class: "btn btn-secondary" %>
-    </div>
-
-  <% end %>
 </div>
+
+<style>
+  .field {
+    margin-bottom: 15px;
+  }
+
+  .field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+  }
+
+  .field input,
+  .field textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+</style>

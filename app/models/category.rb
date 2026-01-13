@@ -19,6 +19,9 @@ class Category < ApplicationRecord
   def books_count
     books.count
   end
+  def as_json(options = {})
+    super(options.merge(methods: [:books_count]))
+  end
 
   private
   def normalize_name

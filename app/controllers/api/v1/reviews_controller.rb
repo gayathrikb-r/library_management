@@ -1,50 +1,74 @@
+# app/controllers/api/v1/reviews_controller.rb
 module Api
   module V1
     class ReviewsController < BaseController
-
       before_action :set_reviewable, only: [:create]
-      before_action :set_review, only: [:show, :update, :destroy, :flag, :approve]
+      before_action :set_review, only: [:update, :destroy, :flag, :approve]
       
       def create
-        authenticate_member! 
-
+        authenticate_member!
+        
         review = @reviewable.reviews.build(review_params)
         review.reviewer = current_member
         review.status = "pending"
-
-        review.save!
-        render json: { message: "Review submitted. Awaiting approval.", review: review }, status: :created
+        
+        if review.save
+          render json: { message: "Review submitted. Awaiting approval.", review: review }, status: :created
+        else
+          render json: { errors: review.errors.full_messages }, status: :unprocessable_entity
+        end
       end
-
-      def show
-        render json: @review
-      end
-
+      
       def update
-        @review.update!(review_params)
-        render json: { message: "Review updated successfully", review: @review }
+        # Check if user owns the review or is librarian
+        unless current_member == @review.reviewer || current_librarian
+          return render json: { error: "Not authorized" }, status: :forbidden
+        end
+        
+        if @review.update(review_params)
+          render json: { message: "Review updated successfully", review: @review }
+        else
+          render json: { errors: @review.errors.full_messages }, status: :unprocessable_entity
+        end
       end
-
+      
       def destroy
+        # Check if user owns the review or is librarian
+        unless current_member == @review.reviewer || current_librarian
+          return render json: { error: "Not authorized" }, status: :forbidden
+        end
+        
         @review.destroy!
         render json: { message: "Review deleted" }
       end
-
-      def flag
-        @review.flag!
-        render json: { message: "Review flagged for moderation", review: @review }
-      end
-
+      
+     def flag
+        authenticate_member!
+        # Fixed the missing 'end' for the if statement here
+        if @review.flag!
+          render json: { 
+            message: "Review flagged and moved to moderation.", 
+            status: @review.status 
+          }, status: :ok
+        else
+          render json: { errors: @review.errors.full_messages }, status: :unprocessable_entity
+        end
+      end # This ends the
+      
       def approve
-
-        return render json: { error: "Not authorized" }, status: :forbidden unless librarian_signed_in?
-        
-        @review.update!(status: "approved")
-        render json: { message: "Review approved", review: @review }
+        authenticate_librarian!
+        if @review.approved?
+          render json: { error: "Review is already approved" }, status: :unprocessable_entity
+        elsif @review.update(status: "approved")
+          render json: { message: "Review approved", review: @review }
+        else
+          render json: { errors: @review.errors.full_messages }, status: :unprocessable_entity
+        end
       end
-
+  
+      
       private
-
+      
       def set_reviewable
         @reviewable = if params[:book_id]
                         Book.find(params[:book_id])
@@ -53,26 +77,11 @@ module Api
                       end
         render json: { error: "Reviewable not found" }, status: :not_found unless @reviewable
       end
-
+      
       def set_review
         @review = Review.find(params[:id])
       end
-
-      def authenticate_any_user!
-        unless member_signed_in? || librarian_signed_in?
-          render json: { error: "Please sign in" }, status: :unauthorized
-        end
-      end
-
-      def authorize_review_owner_or_librarian!
-        is_owner = member_signed_in? && @review.reviewer == current_member
-        is_librarian = librarian_signed_in?
-
-        unless is_owner || is_librarian
-          render json: { error: "Not authorized" }, status: :forbidden
-        end
-      end
-
+      
       def review_params
         params.require(:review).permit(:rating, :comment)
       end

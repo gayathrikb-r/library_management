@@ -3,6 +3,16 @@ class Member < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
+  has_many :oauth_access_grants,
+           as: :resource_owner,
+           class_name: 'Doorkeeper::AccessGrant',
+           dependent: :destroy
+
+  has_many :oauth_access_tokens,
+           as: :resource_owner,
+           class_name: 'Doorkeeper::AccessToken',
+           dependent: :destroy
+
   # Associations
   has_many :borrowings, dependent: :restrict_with_error
   has_many :reservations, dependent: :destroy
@@ -26,6 +36,8 @@ class Member < ApplicationRecord
   before_validation :normalize_phone
   after_commit :send_welcome_email, on: :create
   before_destroy :check_active_borrowings
+  after_update :revoke_all_oauth_tokens!, if: :saved_change_to_encrypted_password?
+
 
   # Scopes / Methods
   def has_overdue_books?
@@ -43,6 +55,11 @@ class Member < ApplicationRecord
 
   def self.ransackable_associations(auth_object = nil)
     %w[borrowings reservations reviews member_categories liked_categories favorite_author]
+  end
+    # Call this when password changes or account is locked
+  def revoke_all_oauth_tokens!
+    oauth_access_tokens.update_all(revoked_at: Time.current)
+    oauth_access_grants.update_all(revoked_at: Time.current)
   end
 
   private
