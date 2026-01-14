@@ -7,14 +7,14 @@ module Api
       include ActionController::Cookies
       include ActionController::RequestForgeryProtection
       
-      # 2. Standard Helpers
+   
       include ActionController::Helpers
       include ActionController::MimeResponds
 
   
       before_action :doorkeeper_authorize!, unless: -> { user_signed_in_via_session? }
 
-      # 4. Error Handling
+      #  Error Handling
       rescue_from ActiveRecord::RecordNotFound, with: :not_found
       rescue_from ActiveRecord::RecordInvalid, with: :unprocessable_entity
       rescue_from ActionController::ParameterMissing, with: :bad_request
@@ -29,15 +29,12 @@ module Api
           total_count: pagy.count
         }
       end
-      # --- AUTHENTICATION GATEKEEPER ---
+    
 
       def user_signed_in_via_session?
-        # Check if Devise (Warden) has a user in the session
         warden&.authenticate(scope: :member) || warden&.authenticate(scope: :librarian)
       end
 
-      # --- ROLE-BASED PROTECTION ---
-      # These methods return JSON 401 if the user isn't logged in
 
       def authenticate_member!
         unless current_member
@@ -51,32 +48,23 @@ module Api
         end
       end
       def authenticate_request!
-        # --- DEBUG LOGGING START ---
-        puts "\n🛑 DEBUGGING AUTHENTICATION:"
-        puts "   Cookies present?: #{cookies.to_h.keys}"
-        puts "   Warden Member: #{warden&.user(:member)&.email.inspect}"
-        puts "   Warden Librarian: #{warden&.user(:librarian)&.email.inspect}"
-        puts "   Doorkeeper Token: #{doorkeeper_token.present?}"
-        # ---------------------------
-
-        # A. Allow if user is signed in via Website Session
         if user_signed_in_via_session?
           puts "✅ User found via Session!"
           return
         end
         
-        # B. Otherwise, strictly require a valid API Token
+        #  Otherwise, strictly require a valid API Token
         puts "⚠️ No Session found. Checking Doorkeeper..."
         doorkeeper_authorize!
       end
 
-      # --- CURRENT USER HELPERS (HYBRID) ---
+     
 
       def current_member
         @current_member ||= begin
-          # 1. Try Session
+          
           warden&.user(:member) || 
-          # 2. Try Token
+         
           (doorkeeper_token && current_resource_owner.is_a?(::Member) ? current_resource_owner : nil)
         end
       end
@@ -109,7 +97,6 @@ module Api
         request.env['warden']
       end
 
-      # ERROR RENDERERS
 
       def not_found(exception)
         render json: { error: exception.message }, status: :not_found

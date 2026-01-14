@@ -562,3 +562,33 @@ td form {
   opacity: 0.6;
   cursor: not-allowed;
 }
+ .form-control {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+  }
+
+  .form-group {
+    margin-bottom: 15px;
+  }
+
+  .star-rating {
+    color: #f39c12;
+  }
+
+  .review-card {
+    border: 1px solid #ddd;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+  }
+
+  .review-date {
+    color: #666;
+    font-size: 0.9em;
+  }
+
+  .action-row {
+    margin-top: 20px;
+  }

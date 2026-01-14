@@ -24,7 +24,6 @@ export default class extends Controller {
       })
       const data = await response.json()
       
-      // FIX: Extract authors array from the response object
       const authorsArray = data.authors || []
       
       this.renderAuthors(authorsArray)

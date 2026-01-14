@@ -26,7 +26,7 @@ export default class extends Controller {
       })
       const data = await response.json()
       
-      // FIX: Check if 'data' is the array itself, or if the array is nested inside 'data.books'
+      //  Check if 'data' is the array itself, or if the array is nested inside 'data.books'
       const booksArray = Array.isArray(data) ? data : (data.books || [])
       
       this.renderBooks(booksArray)
@@ -66,7 +66,7 @@ export default class extends Controller {
   }
 
   renderBooks(books) {
-    // Check the extracted 'books' array, not the raw object
+
     if (!books || books.length === 0) {
       this.gridTarget.innerHTML = `
         <div class="card ">

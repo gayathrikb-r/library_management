@@ -26,7 +26,6 @@ export default class extends Controller {
       bookData.new_author_names = newAuthors.split(',').map(name => name.trim()).filter(Boolean)
     }
 
-    // Handle new categories
     const newCategories = formData.get('book[new_category_name]')
     if (newCategories) {
       bookData.new_category_names = newCategories.split(',').map(name => name.trim()).filter(Boolean)

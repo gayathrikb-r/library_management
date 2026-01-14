@@ -40,7 +40,11 @@ class Librarian < ApplicationRecord
   before_validation :normalize_phone
   after_update :revoke_all_oauth_tokens!, if: :saved_change_to_encrypted_password?
 
-
+    # Call this when password changes or account is locked
+  def revoke_all_oauth_tokens!
+    oauth_access_tokens.update_all(revoked_at: Time.current)
+    oauth_access_grants.update_all(revoked_at: Time.current)
+  end
   private
 
   def normalize_phone

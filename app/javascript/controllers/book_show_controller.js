@@ -224,14 +224,14 @@ async loadBookDetails() {
     `
   }
 
-  // ADD THIS NEW FUNCTION TO YOUR CLASS
+  
   async deleteBook(event) {
     if (!confirm("Are you sure you want to delete this book? This action cannot be undone.")) {
       return
     }
 
     try {
-      // Use this.bookIdValue or the data attribute from the button
+     
       const response = await fetch(`/api/v1/books/${this.bookIdValue}`, {
         method: 'DELETE',
         headers: this.headers()
@@ -239,7 +239,7 @@ async loadBookDetails() {
 
       if (response.ok) {
         alert("Book deleted successfully.")
-        // Redirect to the books index page
+      
         window.location.href = "/books"
       } else {
         alert("Failed to delete book. Please check if there are active borrowings.")
@@ -254,7 +254,7 @@ renderReviews(reviews) {
   const isLibrarian = this.isLibrarianSignedIn()
   const currentMemberId = this.currentMemberId()
 
-  // FIX: Control visibility
+  // Control visibility
   const visibleReviews = reviews.filter(review => {
     if (isLibrarian) return true
     if (review.status === 'approved') return true
@@ -302,7 +302,7 @@ reviewCard(review) {
   const isLibrarian = this.isLibrarianSignedIn()
   const isMember = this.isMemberSignedIn()
 
-  // CHANGE: Allow flagging ONLY if review is approved
+  // flagging only if review is approved
   const canFlag = isMember && !isOwner && review.status === 'approved'
 
   return `
@@ -360,8 +360,7 @@ reviewCard(review) {
     </div>
   `
 }
-
-  // Toggle between view and edit mode
+//between view mode and edit mode for the review form
   toggleEdit(event) {
     const id = event.currentTarget.dataset.reviewId
     const displayDiv = document.getElementById(`review-display-${id}`)
@@ -376,7 +375,7 @@ reviewCard(review) {
     }
   }
 
-  // Handle the actual API update
+
   async updateReview(event) {
     event.preventDefault()
     const id = event.currentTarget.dataset.reviewId
@@ -429,7 +428,7 @@ reviewCard(review) {
     const token = document.querySelector('meta[name="csrf-token"]')?.content
     return {
       'Content-Type': 'application/json',
-      'Accept': 'application/json', // <--- Add this line
+      'Accept': 'application/json', 
       'X-CSRF-Token': token
     }
   }
