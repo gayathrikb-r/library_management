@@ -1,5 +1,5 @@
-// app/javascript/controllers/book_show_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["bookDetails", "reviewsList", "reviewForm"]
@@ -9,40 +9,60 @@ export default class extends Controller {
     this.loadBookDetails()
   }
 
-async loadBookDetails() {
-  try {
-    const response = await fetch(`/api/v1/books/${this.bookIdValue}`, {
-      headers: this.headers()
-    })
-    
-    // Check if the response is actually JSON
-    const contentType = response.headers.get("content-type");
-    if (!response.ok || !contentType || !contentType.includes("application/json")) {
-      const errorHtml = await response.text();
-      console.error("SERVER ERROR HTML:", errorHtml);
-      this.bookDetailsTarget.innerHTML = "<p class='error'>Internal Server Error. Check Rails Logs.</p>";
-      return;
-    }
+  async loadBookDetails() {
+    try {
+      const response = await fetch(`/api/v1/books/${this.bookIdValue}`, {
+        headers: AuthHelper.getAuthHeaders()
+      })
+      
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
 
-    const data = await response.json()
-    this.renderBook(data.book)
-    this.renderReviews(data.reviews)
-  } catch (error) {
-    console.error('Error loading book:', error)
+      const contentType = response.headers.get("content-type")
+      if (!response.ok || !contentType || !contentType.includes("application/json")) {
+        const errorHtml = await response.text()
+        console.error("SERVER ERROR HTML:", errorHtml)
+        this.bookDetailsTarget.innerHTML = "<p class='error'>Internal Server Error. Check Rails Logs.</p>"
+        return
+      }
+
+      const data = await response.json()
+      this.renderBook(data.book)
+      this.renderReviews(data.reviews)
+    } catch (error) {
+      console.error('Error loading book:', error)
+    }
   }
-}
 
   async borrowBook(event) {
     const bookId = event.currentTarget.dataset.bookId
     try {
       const response = await fetch(`/api/v1/books/${bookId}/borrow`, {
         method: 'POST',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
-      const data = await response.json()
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
+
+      const text = await response.text()
+      let data = {}
+      if (text) {
+        try {
+          data = JSON.parse(text)
+        } catch(e) {
+          console.error("JSON Parse Error:", e)
+        }
+      }
+
       
       if (response.ok) {
-        alert(data.message)
+        alert(data.message || "Book borrowed successfully")
         this.loadBookDetails()
       } else {
         alert(data.errors?.join(', ') || 'Error borrowing book')
@@ -58,12 +78,27 @@ async loadBookDetails() {
     try {
       const response = await fetch(`/api/v1/books/${bookId}/reserve`, {
         method: 'POST',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
-      const data = await response.json()
-      
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
+
+      const text = await response.text()
+      let data = {}
+      if (text) {
+        try {
+          data = JSON.parse(text)
+        } catch(e) {
+          console.error("JSON Parse Error:", e)
+        }
+      }
+
       if (response.ok) {
-        alert(data.message)
+        alert(data.message || "Book reserved successfully")
         this.loadBookDetails()
       } else {
         alert(data.errors?.join(', ') || 'Error reserving book')
@@ -87,9 +122,15 @@ async loadBookDetails() {
     try {
       const response = await fetch(`/api/v1/books/${this.bookIdValue}/reviews`, {
         method: 'POST',
-        headers: this.headers(),
+        headers: AuthHelper.getAuthHeaders(),
         body: JSON.stringify({ review: reviewData })
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -112,8 +153,13 @@ async loadBookDetails() {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       if (response.ok) {
         alert('Review deleted')
@@ -132,8 +178,14 @@ async loadBookDetails() {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/flag`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -153,8 +205,14 @@ async loadBookDetails() {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/approve`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -169,7 +227,84 @@ async loadBookDetails() {
     }
   }
 
-  renderBook(book) {
+  async deleteBook(event) {
+    if (!confirm("Are you sure you want to delete this book? This action cannot be undone.")) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/v1/books/${this.bookIdValue}`, {
+        method: 'DELETE',
+        headers: AuthHelper.getAuthHeaders()
+      })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
+      if (response.ok) {
+        alert("Book deleted successfully.")
+        window.location.href = "/books"
+      } else {
+        alert("Failed to delete book. Please check if there are active borrowings.")
+      }
+    } catch (error) {
+      console.error("Error deleting book:", error)
+      alert("An error occurred while deleting the book.")
+    }
+  }
+
+  async updateReview(event) {
+    event.preventDefault()
+    const id = event.currentTarget.dataset.reviewId
+    const formData = new FormData(event.target)
+    
+    const reviewData = {
+      rating: formData.get('review[rating]'),
+      comment: formData.get('review[comment]')
+    }
+
+    try {
+      const response = await fetch(`/api/v1/reviews/${id}`, {
+        method: 'PATCH',
+        headers: AuthHelper.getAuthHeaders(),
+        body: JSON.stringify({ review: reviewData })
+      })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+      
+      if (response.ok) {
+        const data = await response.json()
+        alert(data.message || 'Review updated!')
+        this.loadBookDetails()
+      } else {
+        const data = await response.json()
+        alert(data.errors?.join(', ') || 'Update failed')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+    }
+  }
+
+  toggleEdit(event) {
+    const id = event.currentTarget.dataset.reviewId
+    const displayDiv = document.getElementById(`review-display-${id}`)
+    const editDiv = document.getElementById(`review-edit-${id}`)
+    
+    if (displayDiv.style.display === "none") {
+      displayDiv.style.display = "block"
+      editDiv.style.display = "none"
+    } else {
+      displayDiv.style.display = "none"
+      editDiv.style.display = "block"
+    }
+  }
+
+renderBook(book) {
     const authors = book.authors?.map(a => 
       `<a href="/authors/${a.id}">${this.escapeHtml(a.name)}</a>`
     ).join(", ") || "Unknown"
@@ -178,13 +313,18 @@ async loadBookDetails() {
       `<a href="/categories/${c.id}">${this.escapeHtml(c.name)}</a>`
     ).join(", ") || "None"
     
-    const stars = book.average_rating ? "⭐".repeat(Math.round(book.average_rating)) : ""
+    const rawRating = book.average_rating
+    const ratingNum = rawRating ? Number(rawRating) : 0
+    const stars = rawRating ? "⭐".repeat(Math.round(ratingNum)) : ""
+    
+    const ratingHtml = rawRating 
+      ? `<span class="star-rating">${stars}</span> ${ratingNum.toFixed(1)}/5 (${book.reviews_count} reviews)` 
+      : 'No reviews yet'
     
     const borrowButton = book.available_copies > 0 
       ? `<button class="btn btn-success" data-action="click->book-show#borrowBook" data-book-id="${book.id}">📖 Borrow This Book</button>`
       : `<button class="btn" data-action="click->book-show#reserveBook" data-book-id="${book.id}">🔖 Reserve This Book</button>`
 
-    // Check roles
     const isLibrarian = this.isLibrarianSignedIn()
     const isMember = this.isMemberSignedIn()
 
@@ -196,11 +336,8 @@ async loadBookDetails() {
       <p><strong>Categories:</strong> ${categories}</p>
       <p><strong>Total Copies:</strong> ${book.total_copies}</p>
       <p><strong>Available:</strong> ${book.available_copies}</p>
-   <p>
-        <strong>Average Rating:</strong> 
-        ${book.average_rating ? 
-          `<span class="star-rating">${stars}</span> ${book.average_rating.toFixed(1)}/5 (${book.reviews_count} reviews)` 
-          : ' No reviews yet'}
+      <p>
+        <strong>Average Rating:</strong> ${ratingHtml}
       </p>
       <h3>Description</h3>
       <p>${this.escapeHtml(book.description || "No description available.")}</p>
@@ -224,186 +361,114 @@ async loadBookDetails() {
     `
   }
 
-  
-  async deleteBook(event) {
-    if (!confirm("Are you sure you want to delete this book? This action cannot be undone.")) {
-      return
-    }
+  renderReviews(reviews) {
+    const isMember = this.isMemberSignedIn()
+    const isLibrarian = this.isLibrarianSignedIn()
+    const currentMemberId = this.currentMemberId()
 
-    try {
-     
-      const response = await fetch(`/api/v1/books/${this.bookIdValue}`, {
-        method: 'DELETE',
-        headers: this.headers()
-      })
+    const visibleReviews = reviews.filter(review => {
+      if (isLibrarian) return true
+      if (review.status === 'approved') return true
+      return isMember && review.reviewer_id === currentMemberId
+    })
 
-      if (response.ok) {
-        alert("Book deleted successfully.")
+    const hasAlreadyReviewed = reviews.some(r => r.reviewer_id === currentMemberId)
+    const canWriteReview = isMember && !hasAlreadyReviewed
+
+    this.reviewsListTarget.innerHTML = `
+      <h2>Reviews (${visibleReviews.length})</h2>
       
-        window.location.href = "/books"
-      } else {
-        alert("Failed to delete book. Please check if there are active borrowings.")
-      }
-    } catch (error) {
-      console.error("Error deleting book:", error)
-      alert("An error occurred while deleting the book.")
-    }
+      ${canWriteReview ? `
+        <div class="card mb-4">
+          <h3>Write a Review</h3>
+          <form data-action="submit->book-show#submitReview">
+            <div class="form-group">
+              <label>Rating</label>
+              <select name="review[rating]" class="form-control" required>
+                ${[5,4,3,2,1].map(n => `<option value="${n}">${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Comment</label>
+              <textarea name="review[comment]" rows="4" class="form-control" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Review</button>
+          </form>
+        </div>
+      ` : isMember && hasAlreadyReviewed ? '<p><i>You have already reviewed this book.</i></p>' : ''}
+      
+      ${visibleReviews.length > 0
+        ? visibleReviews.map(review => this.reviewCard(review)).join('')
+        : '<p>No reviews yet.</p>'}
+    `
   }
-renderReviews(reviews) {
-  const isMember = this.isMemberSignedIn()
-  const isLibrarian = this.isLibrarianSignedIn()
-  const currentMemberId = this.currentMemberId()
 
-  // Control visibility
-  const visibleReviews = reviews.filter(review => {
-    if (isLibrarian) return true
-    if (review.status === 'approved') return true
-    return isMember && review.reviewer_id === currentMemberId
-  })
-
-  const hasAlreadyReviewed = reviews.some(r => r.reviewer_id === currentMemberId)
-  const canWriteReview = isMember && !hasAlreadyReviewed
-
-  this.reviewsListTarget.innerHTML = `
-    <h2>Reviews (${visibleReviews.length})</h2>
+  reviewCard(review) {
+    const stars = "⭐".repeat(review.rating)
+    const date = new Date(review.created_at).toLocaleDateString('en-US', { 
+      year: 'numeric', month: 'long', day: 'numeric' 
+    })
     
-    ${canWriteReview ? `
-      <div class="card mb-4">
-        <h3>Write a Review</h3>
-        <form data-action="submit->book-show#submitReview">
-          <div class="form-group">
-            <label>Rating</label>
-            <select name="review[rating]" class="form-control" required>
-              ${[5,4,3,2,1].map(n => `<option value="${n}">${n}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Comment</label>
-            <textarea name="review[comment]" rows="4" class="form-control" required></textarea>
-          </div>
-          <button type="submit" class="btn btn-primary">Submit Review</button>
-        </form>
-      </div>
-    ` : isMember && hasAlreadyReviewed ? '<p><i>You have already reviewed this book.</i></p>' : ''}
-    
-    ${visibleReviews.length > 0
-      ? visibleReviews.map(review => this.reviewCard(review)).join('')
-      : '<p>No reviews yet.</p>'}
-  `
-}
+    const isOwner = this.isMemberSignedIn() && review.reviewer_id === this.currentMemberId()
+    const isLibrarian = this.isLibrarianSignedIn()
+    const isMember = this.isMemberSignedIn()
 
-reviewCard(review) {
-  const stars = "⭐".repeat(review.rating)
-  const date = new Date(review.created_at).toLocaleDateString('en-US', { 
-    year: 'numeric', month: 'long', day: 'numeric' 
-  })
-  
-  const isOwner = this.isMemberSignedIn() && review.reviewer_id === this.currentMemberId()
-  const isLibrarian = this.isLibrarianSignedIn()
-  const isMember = this.isMemberSignedIn()
+    const canFlag = isMember && !isOwner && review.status === 'approved'
 
-  // flagging only if review is approved
-  const canFlag = isMember && !isOwner && review.status === 'approved'
+    return `
+      <div class="review-card" id="review-container-${review.id}">
+        <div id="review-display-${review.id}">
+          <p>
+            <strong>${this.escapeHtml(review.reviewer?.name || "Anonymous")}</strong>
+            <span class="star-rating">${stars}</span>
 
-  return `
-    <div class="review-card" id="review-container-${review.id}">
-      <div id="review-display-${review.id}">
-        <p>
-          <strong>${this.escapeHtml(review.reviewer?.name || "Anonymous")}</strong>
-          <span class="star-rating">${stars}</span>
-
-          ${review.status === 'pending' ? `
-            <span class="badge badge-warning">
-              ${isOwner ? 'Pending for approval' : 'Under Moderation'}
-            </span>
-          ` : ''}
-        </p>
-
-        <p class="review-comment">${this.escapeHtml(review.comment)}</p>
-        <p class="review-date">${date}</p>
-        
-        <div class="review-actions">
-          ${isOwner ? `
-            <button class="btn btn-primary btn-sm" data-action="click->book-show#toggleEdit" data-review-id="${review.id}">Edit</button>
-            <button class="btn btn-danger btn-sm" data-action="click->book-show#deleteReview" data-review-id="${review.id}">Delete</button>
-          ` : ''}
-
-          ${canFlag ? `
-            <button class="btn btn-warning btn-sm" data-action="click->book-show#flagReview" data-review-id="${review.id}">Flag</button>
-          ` : ''}
-
-          ${isLibrarian ? `
-            <button class="btn btn-danger btn-sm" data-action="click->book-show#deleteReview" data-review-id="${review.id}">Delete</button>
-            ${review.status !== 'approved' ? `
-              <button class="btn btn-success btn-sm" data-action="click->book-show#approveReview" data-review-id="${review.id}">Approve</button>
+            ${review.status === 'pending' ? `
+              <span class="badge badge-warning">
+                ${isOwner ? 'Pending for approval' : 'Under Moderation'}
+              </span>
             ` : ''}
-          ` : ''}
+          </p>
+
+          <p class="review-comment">${this.escapeHtml(review.comment)}</p>
+          <p class="review-date">${date}</p>
+          
+          <div class="review-actions">
+            ${isOwner ? `
+              <button class="btn btn-primary btn-sm" data-action="click->book-show#toggleEdit" data-review-id="${review.id}">Edit</button>
+              <button class="btn btn-danger btn-sm" data-action="click->book-show#deleteReview" data-review-id="${review.id}">Delete</button>
+            ` : ''}
+
+            ${canFlag ? `
+              <button class="btn btn-warning btn-sm" data-action="click->book-show#flagReview" data-review-id="${review.id}">Flag</button>
+            ` : ''}
+
+            ${isLibrarian ? `
+              <button class="btn btn-danger btn-sm" data-action="click->book-show#deleteReview" data-review-id="${review.id}">Delete</button>
+              ${review.status !== 'approved' ? `
+                <button class="btn btn-success btn-sm" data-action="click->book-show#approveReview" data-review-id="${review.id}">Approve</button>
+              ` : ''}
+            ` : ''}
+          </div>
+        </div>
+
+        <div id="review-edit-${review.id}" style="display: none;">
+          <form data-action="submit->book-show#updateReview" data-review-id="${review.id}">
+            <div class="form-group">
+              <label>Rating</label>
+              <select name="review[rating]" class="form-control">
+                ${[5,4,3,2,1].map(n => `<option value="${n}" ${n == review.rating ? 'selected' : ''}>${n}</option>`).join('')}
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Comment</label>
+              <textarea name="review[comment]" class="form-control">${this.escapeHtml(review.comment)}</textarea>
+            </div>
+            <button type="submit" class="btn btn-success btn-sm">Save</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-action="click->book-show#toggleEdit" data-review-id="${review.id}">Cancel</button>
+          </form>
         </div>
       </div>
-
-      <div id="review-edit-${review.id}" style="display: none;">
-        <form data-action="submit->book-show#updateReview" data-review-id="${review.id}">
-          <div class="form-group">
-            <label>Rating</label>
-            <select name="review[rating]" class="form-control">
-              ${[5,4,3,2,1].map(n => `<option value="${n}" ${n == review.rating ? 'selected' : ''}>${n}</option>`).join('')}
-            </select>
-          </div>
-          <div class="form-group">
-            <label>Comment</label>
-            <textarea name="review[comment]" class="form-control">${this.escapeHtml(review.comment)}</textarea>
-          </div>
-          <button type="submit" class="btn btn-success btn-sm">Save</button>
-          <button type="button" class="btn btn-secondary btn-sm" data-action="click->book-show#toggleEdit" data-review-id="${review.id}">Cancel</button>
-        </form>
-      </div>
-    </div>
-  `
-}
-//between view mode and edit mode for the review form
-  toggleEdit(event) {
-    const id = event.currentTarget.dataset.reviewId
-    const displayDiv = document.getElementById(`review-display-${id}`)
-    const editDiv = document.getElementById(`review-edit-${id}`)
-    
-    if (displayDiv.style.display === "none") {
-      displayDiv.style.display = "block"
-      editDiv.style.display = "none"
-    } else {
-      displayDiv.style.display = "none"
-      editDiv.style.display = "block"
-    }
-  }
-
-
-  async updateReview(event) {
-    event.preventDefault()
-    const id = event.currentTarget.dataset.reviewId
-    const formData = new FormData(event.target)
-    
-    const reviewData = {
-      rating: formData.get('review[rating]'),
-      comment: formData.get('review[comment]')
-    }
-
-    try {
-      const response = await fetch(`/api/v1/reviews/${id}`, {
-        method: 'PATCH',
-        headers: this.headers(),
-        body: JSON.stringify({ review: reviewData })
-      })
-      
-      if (response.ok) {
-        const data = await response.json()
-        alert(data.message || 'Review updated!')
-        this.loadBookDetails() // Refresh the list
-      } else {
-        const data = await response.json()
-        alert(data.errors?.join(', ') || 'Update failed')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-    }
+    `
   }
 
   isMemberSignedIn() {
@@ -422,14 +487,5 @@ reviewCard(review) {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json', 
-      'X-CSRF-Token': token
-    }
   }
 }

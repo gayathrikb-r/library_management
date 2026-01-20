@@ -3,7 +3,7 @@
 </div>
 
 <div data-controller="books">
-  <!-- Filters -->
+
   <div class="card">
     <form data-action="submit->books#search" class="filter-form">
       <div class="filter-row">
@@ -38,7 +38,7 @@
     </form>
   </div>
 
-  <!-- Librarian-only action -->
+
   <% if librarian_signed_in? %>
     <div class="actions-bar">
       <%= link_to "➕ Add New Book", new_book_path, class: "btn btn-success" %>
@@ -47,7 +47,7 @@
 
   <!-- Books Grid -->
   <div class="grid" data-books-target="grid">
-    <!-- Books will be loaded here via JavaScript -->
+   
   </div>
   <div data-books-target="pagination"></div>
 </div>

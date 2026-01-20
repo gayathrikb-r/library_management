@@ -1,5 +1,5 @@
-// app/javascript/controllers/borrowings_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["table", "filters"]
@@ -25,8 +25,14 @@ export default class extends Controller {
 
     try {
       const response = await fetch(`/api/v1/borrowings?${params}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const borrowings = await response.json()
       this.renderBorrowings(borrowings)
     } catch (error) {
@@ -39,7 +45,6 @@ export default class extends Controller {
     const filter = event.currentTarget.dataset.filter
     this.filterValue = filter || ''
     
-    // Update active button
     this.element.querySelectorAll('[data-filter]').forEach(btn => {
       btn.classList.remove('btn-success')
     })
@@ -55,8 +60,14 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/borrowings/${borrowingId}/return_book`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -133,17 +144,15 @@ export default class extends Controller {
     `
   }
 
-getStatusBadge(borrowing) {
-if (borrowing.returned_date || borrowing.status === 'returned') {
+  getStatusBadge(borrowing) {
+    if (borrowing.returned_date || borrowing.status === 'returned') {
       return '<span class="badge badge-success">Returned</span>'
     }
 
-    // 2. If NOT returned, then check if it is overdue
     if (borrowing.status === 'overdue' || borrowing.days_overdue > 0) {
       return `<span class="badge badge-danger">Overdue (${borrowing.days_overdue} days)</span>`
     }
 
-    // 3. Otherwise, it is Active
     return '<span class="badge badge-info">Active</span>'
   }
 
@@ -160,13 +169,5 @@ if (borrowing.returned_date || borrowing.status === 'returned') {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

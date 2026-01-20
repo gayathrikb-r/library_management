@@ -1,5 +1,5 @@
-// app/javascript/controllers/categories_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["grid", "pagination"]
@@ -19,16 +19,19 @@ export default class extends Controller {
 
     try {
       const response = await fetch(`/api/v1/categories?${params}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
-      
-      // FIX: Extract categories array from the response object
       const categoriesArray = data.categories || []
       
       this.renderCategories(categoriesArray)
       
-      // Render pagination if meta exists
       if (data.meta) {
         this.renderPagination(data.meta)
       }
@@ -55,8 +58,13 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/categories/${categoryId}`, {
         method: 'DELETE',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       if (response.ok || response.status === 204) {
         alert('Category deleted')
@@ -95,7 +103,6 @@ export default class extends Controller {
     }
 
     let pages = []
-    
     pages.push(1)
     
     for (let i = Math.max(2, current_page - 1); i <= Math.min(total_pages - 1, current_page + 1); i++) {
@@ -170,13 +177,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

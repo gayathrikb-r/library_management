@@ -1,5 +1,6 @@
 // app/javascript/controllers/librarian_dashboard_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = [
@@ -16,9 +17,15 @@ export default class extends Controller {
 
   async loadDashboard() {
     try {
-        const response = await fetch('/api/v1/librarians/dashboard.json',{
-        headers: this.headers()
+      const response = await fetch('/api/v1/librarians/dashboard.json', {
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       this.renderStats(data.stats)
@@ -60,7 +67,7 @@ export default class extends Controller {
     `
   }
 
-renderOverdueBooks(overdueBooks) {
+  renderOverdueBooks(overdueBooks) {
     if (overdueBooks.length === 0) {
       this.overdueBooksTarget.innerHTML = '<p>No overdue books! 🎉</p>'
       return
@@ -147,7 +154,7 @@ renderOverdueBooks(overdueBooks) {
     `
   }
 
-renderRecentBorrowings(borrowings) {
+  renderRecentBorrowings(borrowings) {
     if (borrowings.length === 0) {
       this.recentBorrowingsTarget.innerHTML = '<p>No recent borrowings.</p>'
       return
@@ -177,7 +184,7 @@ renderRecentBorrowings(borrowings) {
     `
   }
 
-renderPendingReservations(reservations) {
+  renderPendingReservations(reservations) {
     if (reservations.length === 0) {
       this.pendingReservationsTarget.innerHTML = '<p>No pending reservations 🎉</p>'
       return
@@ -231,8 +238,14 @@ renderPendingReservations(reservations) {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/approve`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -254,8 +267,13 @@ renderPendingReservations(reservations) {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}`, {
         method: 'DELETE',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       if (response.ok) {
         alert('Review deleted')
@@ -276,8 +294,14 @@ renderPendingReservations(reservations) {
     try {
       const response = await fetch(`/api/v1/librarians/reservations/${reservationId}/fulfill`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -299,8 +323,14 @@ renderPendingReservations(reservations) {
     try {
       const response = await fetch(`/api/v1/librarians/reservations/${reservationId}/cancel`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -326,7 +356,6 @@ renderPendingReservations(reservations) {
   }
 
   statusBadge(status) {
-    // FIX: Map both 'active' and 'borrowed' to the Active badge logic
     const badges = {
       'active': '<span class="badge badge-info" style="background-color: #17a2b8; color: white;">Active</span>',
       'borrowed': '<span class="badge badge-info" style="background-color: #17a2b8; color: white;">Active</span>',
@@ -349,13 +378,5 @@ renderPendingReservations(reservations) {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

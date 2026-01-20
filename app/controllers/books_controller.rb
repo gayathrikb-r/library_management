@@ -1,11 +1,11 @@
 class BooksController < ApplicationController
-  before_action :set_book, only: [:show, :edit, :update, :destroy, :borrow, :reserve]
+  before_action :set_book, only: [ :show, :edit, :update, :destroy, :borrow, :reserve ]
 
   # Librarians can manage books
-  before_action :authenticate_librarian!, only: [:new, :create, :edit, :update, :destroy]
+  before_action :authenticate_librarian!, only: [ :new, :create, :edit, :update, :destroy ]
 
   # Members can borrow or reserve
-  before_action :authenticate_member!, only: [:borrow, :reserve]
+  before_action :authenticate_member!, only: [ :borrow, :reserve ]
 
   def index
     @books = Book.includes(:authors, :categories)
@@ -45,7 +45,7 @@ end
       redirect_to @book, notice: "Book created successfully"
     else
       flash.now[:alert] = @book.errors.full_messages.join(", ")
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -56,7 +56,7 @@ end
       redirect_to @book, notice: "Book updated successfully"
     else
       flash.now[:alert] = @book.errors.full_messages.join(", ")
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

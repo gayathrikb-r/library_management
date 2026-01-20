@@ -1,9 +1,11 @@
-# app/models/borrowing.rb
 class Borrowing < ApplicationRecord
   belongs_to :member
   belongs_to :librarian, optional: true
   belongs_to :book
   
+
+  attr_accessor :created_by_librarian
+
   def self.ransackable_attributes(auth_object = nil)
     ["book_id", "borrowed_date", "created_at", "due_date", "id", "id_value", "librarian_id", "member_id", "returned_date", "status", "updated_at"]
   end
@@ -12,27 +14,29 @@ class Borrowing < ApplicationRecord
     ["book", "librarian", "member"]
   end
   
-  enum status: { borrowed: 0, returned: 1, overdue: 2 }
+  enum :status, { borrowed: 0, returned: 1, overdue: 2 }
   
   FINE_PER_DAY = 5
   
   validates :borrowed_date, :due_date, presence: true
   validates :member, :book, presence: true
   validate :member_can_borrow, on: :create
-  validate :book_is_available_or_reserved, on: :create  # CHANGED: More flexible validation
+  validate :book_is_available_or_reserved, on: :create  
   validate :due_date_after_borrowed_date
   
   # Callbacks
   before_validation :set_dates, on: :create
   before_validation :check_if_overdue
   after_create :decrease_book_availability
-  after_update :increase_book_availability, if: :returned_now?
   after_update :notify_next_reservation, if: :returned_now?
   
   # Scopes
   scope :borrowed, -> { where(status: :borrowed) }
   scope :returned, -> { where(status: :returned) }
-  scope :active, -> { borrowed }
+scope :active, -> { 
+    where(returned_date: nil)
+    .where("due_date >= ?", Date.current) 
+  }
   scope :overdue, -> {
     where(returned_date: nil).and(
       where(status: :overdue).or(
@@ -46,12 +50,26 @@ class Borrowing < ApplicationRecord
   
   def mark_as_returned!
     return if returned?
-    update!(status: :returned, returned_date: Date.today)
+    
+    transaction do
+      update!(status: :returned, returned_date: Date.today)
+      book.increment!(:available_copies)
+    end
+    
+    true
+  rescue => e
+    Rails.logger.error("Error marking borrowing as returned: #{e.message}")
+    false
   end
   
+
   def days_overdue
-    return 0 unless overdue?
-    (Date.today - due_date).to_i
+    return 0 if returned_date.present?
+    
+    today = Date.current
+    return 0 if due_date >= today
+
+    (today - due_date).to_i
   end
   
   def active?
@@ -78,6 +96,8 @@ class Borrowing < ApplicationRecord
   end
   
   def member_can_borrow
+ 
+    return if created_by_librarian
     return unless member
     
     if member.has_overdue_books?
@@ -87,14 +107,11 @@ class Borrowing < ApplicationRecord
     end
   end
   
-  # UPDATED: Check if book is available OR if this is for a reservation fulfillment
   def book_is_available_or_reserved
     return unless book
     
-    # If book has available copies, it's fine
     return if book.available_copies.to_i > 0
     
-    # If book has no available copies, check if there's a pending reservation for this member
     has_reservation = book.reservations.pending.exists?(member: member)
     
     unless has_reservation

@@ -2,17 +2,15 @@ module Api
   module V1
     class MembersController < BaseController
       before_action :set_member
-      before_action :authenticate_any_user!
       before_action :authorize_member_access!
 
       # GET /api/v1/members/:id
       def show
-        render json: @member.as_json(only: [:id, :name, :email, :phone, :bio, :birth_date])
+        render json: @member.as_json(only: [ :id, :name, :email, :phone, :bio, :birth_date ])
       end
 
       # GET /api/v1/members/:id/activity
       def activity
-        # Only librarians can view activity stats
         unless librarian_signed_in?
           return render json: { error: "Not authorized" }, status: :forbidden
         end
@@ -31,39 +29,33 @@ module Api
       # PATCH/PUT /api/v1/members/:id
       def update
         if @member.update(member_params)
-          render json: { 
-            message: "Profile updated successfully", 
-            member: @member.as_json(only: [:id, :name, :email, :phone, :bio, :birth_date])
+          render json: {
+            message: "Profile updated successfully",
+            member: @member.as_json(only: [ :id, :name, :email, :phone, :bio, :birth_date ])
           }
         else
-          render json: { 
-            errors: @member.errors.full_messages 
-          }, status: :unprocessable_entity
+          render json: {
+            errors: @member.errors.full_messages
+          }, status: :unprocessable_content
         end
       end
 
       private
 
-def set_member
-  # Add :: before Member to force Ruby to find the top-level Model
-  @member = ::Member.find(params[:id])
-rescue ActiveRecord::RecordNotFound
-  render json: { error: "Member not found" }, status: :not_found
-end
+      def set_member
+        @member = ::Member.find(params[:id])
+      rescue ActiveRecord::RecordNotFound
+        render json: { error: "Member not found" }, status: :not_found
+      end
+
       def authorize_member_access!
         return if librarian_signed_in?
-        
+
         if member_signed_in?
           return if current_member == @member
         end
-        
-        render json: { error: "Not authorized" }, status: :forbidden
-      end
 
-      def authenticate_any_user!
-        unless member_signed_in? || librarian_signed_in?
-          render json: { error: "Please sign in" }, status: :unauthorized
-        end
+        render json: { error: "Not authorized" }, status: :forbidden
       end
 
       def member_params

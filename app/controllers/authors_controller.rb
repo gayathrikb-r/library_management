@@ -1,6 +1,6 @@
 class AuthorsController < ApplicationController
-  before_action :set_author, only: [:show, :edit, :update, :destroy]
-  before_action :authenticate_librarian!, except: [:index, :show]
+  before_action :set_author, only: [ :show, :edit, :update, :destroy ]
+  before_action :authenticate_librarian!, except: [ :index, :show ]
 
   def index
     @authors =
@@ -51,7 +51,7 @@ end
       flash[:notice] = "Author created successfully"
       redirect_to author_path(@author)
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -63,16 +63,16 @@ end
       flash[:notice] = "Author updated successfully"
       redirect_to author_path(@author)
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
 def destroy
   if @author.destroy
     # 204 No Content is the standard success response for DELETE
-    head :no_content 
+    head :no_content
   else
-    render json: { errors: @author.errors.full_messages }, status: :unprocessable_entity
+    render json: { errors: @author.errors.full_messages }, status: :unprocessable_content
   end
 end
   private

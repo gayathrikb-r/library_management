@@ -1,0 +1,7 @@
+<h1>Review Details</h1>
+<p><strong>Book:</strong> <%= @review.reviewable.title %></p>
+<p><strong>Comment:</strong> <%= @review.comment %></p>
+
+<% if @review.pending? %>
+  <%= button_to "Approve", approve_librarians_review_path(@review), method: :patch %>
+<% end %>

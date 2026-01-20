@@ -1,5 +1,5 @@
 # frozen_string_literal: true
-# app/controllers/members/registrations_controller.rb
+
 class Members::RegistrationsController < Devise::RegistrationsController
   def create
     build_resource(sign_up_params)
@@ -19,9 +19,9 @@ class Members::RegistrationsController < Devise::RegistrationsController
       clean_up_passwords resource
       set_minimum_password_length
 
- 
+
     flash.now[:errors] = resource.errors.full_messages
-    render :new, status: :unprocessable_entity
+    render :new, status: :unprocessable_content
 
     end
   end

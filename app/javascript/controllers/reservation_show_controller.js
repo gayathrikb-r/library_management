@@ -1,5 +1,5 @@
-// app/javascript/controllers/reservation_show_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["details"]
@@ -12,8 +12,14 @@ export default class extends Controller {
   async loadReservationDetails() {
     try {
       const response = await fetch(`/api/v1/reservations/${this.reservationIdValue}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const reservation = await response.json()
       this.renderReservation(reservation)
     } catch (error) {
@@ -27,8 +33,14 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/reservations/${this.reservationIdValue}/cancel`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -85,13 +97,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

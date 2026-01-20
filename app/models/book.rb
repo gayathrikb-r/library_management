@@ -28,7 +28,7 @@ class Book < ApplicationRecord
   has_many :book_categories, dependent: :destroy
   has_many :categories, through: :book_categories
 
-  has_many :borrowings, dependent: :restrict_with_error
+  has_many :borrowings, dependent: :destroy
   has_many :borrowers, through: :borrowings, source: :member
 
   has_many :reservations, dependent: :destroy
@@ -46,7 +46,7 @@ class Book < ApplicationRecord
   # Callbacks
   before_validation :normalize_isbn
   before_validation :set_initial_copies, on: :create
-  before_destroy :check_active_borrowings
+  before_destroy :check_active_borrowings, prepend: true
 
   # Scopes
   scope :available, -> { where("available_copies > 0") }
@@ -73,24 +73,21 @@ class Book < ApplicationRecord
     increment!(:available_copies) if available_copies < total_copies
   end
 
-# app/models/book.rb
 
 def update_average_rating!
-  reviews_with_rating = reviews.where.not(rating: nil)
-  
-  if reviews_with_rating.any?
-    self.average_rating = reviews_with_rating.average(:rating).to_f.round(2)
-  else
-    self.average_rating = 0.0
+    # Only calculate based on approved reviews
+    valid_reviews = reviews.where(status: :approved).where.not(rating: nil)
+    
+    new_rating = if valid_reviews.any?
+                   valid_reviews.average(:rating).to_f.round(2)
+                 else
+                   0.0
+                 end
+    
+    # Update column without triggering validations loop
+    update_column(:average_rating, new_rating)
   end
-  
-  # Skip validation when updating only the rating
-  save(validate: false)
-end
-  def average_rating
-  # If reviews.average is nil, return 0.0
-  reviews.approved.average(:rating)&.to_f || 0.0
-  end
+
   private
 
   def normalize_isbn
@@ -107,11 +104,11 @@ end
     end
   end
 
-  def check_active_borrowings
-    if borrowings.borrowed.exists?
-      errors.add(:base, "Cannot delete book with active borrowings")
-      throw :abort
-    end
+def check_active_borrowings
+  if borrowings.where.not(status: :returned).exists?
+    errors.add(:base, "Cannot delete book with active borrowings")
+    throw :abort
   end
+end
   
 end

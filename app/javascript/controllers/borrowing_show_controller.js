@@ -1,5 +1,6 @@
 // app/javascript/controllers/borrowing_show_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["details"]
@@ -12,8 +13,14 @@ export default class extends Controller {
   async loadBorrowingDetails() {
     try {
       const response = await fetch(`/api/v1/borrowings/${this.borrowingIdValue}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const borrowing = await response.json()
       this.renderBorrowing(borrowing)
     } catch (error) {
@@ -27,8 +34,14 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/borrowings/${this.borrowingIdValue}/return_book`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -43,7 +56,7 @@ export default class extends Controller {
     }
   }
 
-renderBorrowing(borrowing) {
+  renderBorrowing(borrowing) {
     const statusBadge = this.getStatusBadge(borrowing)
     const borrowedDate = this.formatDateLong(borrowing.borrowed_date)
     const dueDate = this.formatDateLong(borrowing.due_date)
@@ -83,8 +96,8 @@ renderBorrowing(borrowing) {
     `
   }
 
-getStatusBadge(borrowing) {
-if (borrowing.returned_date || borrowing.status === 'returned') {
+  getStatusBadge(borrowing) {
+    if (borrowing.returned_date || borrowing.status === 'returned') {
       return '<span class="badge badge-success">Returned</span>'
     }
     
@@ -110,13 +123,5 @@ if (borrowing.returned_date || borrowing.status === 'returned') {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

@@ -1,0 +1,23 @@
+<h1>Reviews</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Book</th>
+      <th>Reviewer</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% @reviews.each do |review| %>
+      <tr>
+        <td><%= review.reviewable.title %></td>
+        <td><%= review.reviewer.name rescue "Member" %></td>
+        <td><%= review.status %></td>
+        <td>
+          <%= link_to "Show", librarians_review_path(review) %>
+        </td>
+      </tr>
+    <% end %>
+  </tbody>
+</table>

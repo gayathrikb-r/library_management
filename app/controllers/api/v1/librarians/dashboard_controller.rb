@@ -7,7 +7,6 @@ module Api
         def index
           render json: {
             stats: {
-             
               total_books: ::Book.count,
               total_members: ::Member.count,
               active_borrowings: ::Borrowing.borrowed.count,
@@ -26,9 +25,9 @@ module Api
 
         def overdue_books_data
           ::Borrowing.overdue
-                   .includes(:member, :book)
-                   .limit(10)
-                   .map do |b|
+                     .includes(:member, :book)
+                     .limit(10)
+                     .map do |b|
             {
               id: b.id,
               member: { id: b.member.id, name: b.member.name },
@@ -41,10 +40,10 @@ module Api
 
         def pending_reviews_data
           ::Review.pending
-                .includes(:reviewer, :reviewable)
-                .order(created_at: :desc)
-                .limit(20)
-                .map do |r|
+                  .includes(:reviewer, :reviewable)
+                  .order(created_at: :desc)
+                  .limit(20)
+                  .map do |r|
             {
               id: r.id,
               reviewer: { id: r.reviewer.id, name: r.reviewer.name },
@@ -60,9 +59,9 @@ module Api
 
         def recent_borrowings_data
           ::Borrowing.includes(:member, :book)
-                   .order(created_at: :desc)
-                   .limit(10)
-                   .map do |b|
+                     .order(created_at: :desc)
+                     .limit(10)
+                     .map do |b|
             {
               id: b.id,
               member: { id: b.member.id, name: b.member.name },
@@ -75,9 +74,9 @@ module Api
 
         def pending_reservations_data
           ::Reservation.pending
-                     .includes(:member, :book)
-                     .order(created_at: :desc)
-                     .map do |r|
+                       .includes(:member, :book)
+                       .order(created_at: :desc)
+                       .map do |r|
             {
               id: r.id,
               member: { id: r.member.id, name: r.member.name },

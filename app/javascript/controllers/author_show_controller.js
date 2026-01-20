@@ -1,5 +1,5 @@
-// app/javascript/controllers/author_show_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["authorDetails", "reviewsList"]
@@ -12,15 +12,19 @@ export default class extends Controller {
   async loadAuthorDetails() {
     try {
       const response = await fetch(`/api/v1/authors/${this.authorIdValue}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
 
-      // Safety check: Ensure response is JSON
-      const contentType = response.headers.get("content-type");
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
+      const contentType = response.headers.get("content-type")
       if (!response.ok || !contentType || !contentType.includes("application/json")) {
-        console.error("Server Error: Response was not JSON");
-        this.authorDetailsTarget.innerHTML = "<p class='error'>Error loading author details.</p>";
-        return;
+        console.error("Server Error: Response was not JSON")
+        this.authorDetailsTarget.innerHTML = "<p class='error'>Error loading author details.</p>"
+        return
       }
 
       const data = await response.json()
@@ -31,7 +35,6 @@ export default class extends Controller {
     }
   }
 
-  // --- REVIEW SUBMISSION ---
   async submitReview(event) {
     event.preventDefault()
     const form = event.target
@@ -45,9 +48,15 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/authors/${this.authorIdValue}/reviews`, {
         method: 'POST',
-        headers: this.headers(),
+        headers: AuthHelper.getAuthHeaders(),
         body: JSON.stringify({ review: reviewData })
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       if (response.ok) {
@@ -63,7 +72,6 @@ export default class extends Controller {
     }
   }
 
-  // --- REVIEW EDITING (In-Place) ---
   toggleEdit(event) {
     const id = event.currentTarget.dataset.reviewId
     const displayDiv = document.getElementById(`review-display-${id}`)
@@ -91,9 +99,14 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/reviews/${id}`, {
         method: 'PATCH',
-        headers: this.headers(),
+        headers: AuthHelper.getAuthHeaders(),
         body: JSON.stringify({ review: reviewData })
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       if (response.ok) {
         alert('Review updated!')
@@ -107,29 +120,57 @@ export default class extends Controller {
     }
   }
 
-  // --- REVIEW ACTIONS ---
-async deleteAuthor() {
-  if (!confirm('Are you sure? The author will be removed, but their books will stay.')) return
+  async deleteReview(event) {
+    const reviewId = event.currentTarget.dataset.reviewId
+    if (!confirm('Delete this review?')) return
 
-  try {
-    const response = await fetch(`/api/v1/authors/${this.authorIdValue}`, {
-      method: 'DELETE',
-      headers: this.headers()
-    })
-    
-    // SUCCESS: Status 204 (No Content) or 200 (OK)
-    if (response.ok || response.status === 204) {
-      alert('Author deleted successfully.')
-      window.location.href = '/authors' 
-    } else {
-      // FAILURE: Only try to parse JSON if there is actually content
-      const data = await response.json().catch(() => ({}));
-      alert(data.errors?.join(', ') || 'Delete failed.');
+    try {
+      const response = await fetch(`/api/v1/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: AuthHelper.getAuthHeaders()
+      })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
+      if (response.ok) {
+        alert('Review deleted')
+        this.loadAuthorDetails()
+      }
+    } catch (error) {
+      console.error('Error:', error)
     }
-  } catch (error) {
-    console.error('Error:', error)
   }
-}
+
+  async deleteAuthor() {
+    if (!confirm('Are you sure? This will remove the author, but their books will remain.')) return
+
+    try {
+      const response = await fetch(`/api/v1/authors/${this.authorIdValue}`, {
+        method: 'DELETE',
+        headers: AuthHelper.getAuthHeaders()
+      })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+      
+      if (response.ok || response.status === 204) {
+        alert('Author deleted successfully.')
+        window.location.href = '/authors' 
+      } else {
+        const data = await response.json().catch(() => ({}))
+        alert(data.errors?.join(', ') || 'Server rejected the deletion.')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      alert('Failed to connect to the server.')
+    }
+  }
+
   async flagReview(event) {
     const reviewId = event.currentTarget.dataset.reviewId
     if (!confirm('Flag this review as inappropriate?')) return
@@ -137,11 +178,17 @@ async deleteAuthor() {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/flag`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       if (response.ok) {
         alert("Review flagged.")
-        this.loadAuthorDetails() // Reload to remove the flag button
+        this.loadAuthorDetails()
       }
     } catch (error) {
       console.error('Error:', error)
@@ -153,8 +200,14 @@ async deleteAuthor() {
     try {
       const response = await fetch(`/api/v1/reviews/${reviewId}/approve`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       if (response.ok) {
         alert("Review approved.")
         this.loadAuthorDetails()
@@ -164,31 +217,6 @@ async deleteAuthor() {
     }
   }
 
-  // --- AUTHOR ACTIONS ---
-async deleteAuthor() {
-  if (!confirm('Are you sure? This will remove the author, but their books will remain.')) return
-
-  try {
-    const response = await fetch(`/api/v1/authors/${this.authorIdValue}`, {
-      method: 'DELETE',
-      headers: this.headers()
-    })
-    
-    // Status 204 means success with no content to return
-    if (response.ok || response.status === 204) {
-      alert('Author deleted successfully.')
-      window.location.href = '/authors' 
-    } else {
-      // Try to get the real error message from your controller
-      const data = await response.json().catch(() => ({}));
-      alert(data.errors?.join(', ') || 'Server rejected the deletion.')
-    }
-  } catch (error) {
-    console.error('Error:', error)
-    alert('Failed to connect to the server.')
-  }
-}
-  // --- RENDERING ---
   renderAuthor(author) {
     const birthDate = author.birth_date 
       ? `<p><strong>Born:</strong> ${this.formatDate(author.birth_date)}</p>`
@@ -204,7 +232,6 @@ async deleteAuthor() {
       
       ${isLibrarian ? `
         <div class="librarian-actions mt-3 pt-3 border-top">
-         
           <a href="/authors/${author.id}/edit" class="btn btn-primary btn-sm">Edit</a>
           <button class="btn btn-danger btn-sm" data-action="click->author-show#deleteAuthor">Delete</button>
         </div>`
@@ -262,11 +289,11 @@ async deleteAuthor() {
           <p>
             <strong>${this.escapeHtml(review.reviewer?.name || "Anonymous")}</strong>
             <span class="star-rating">${stars}</span>
-           ${review.status === 'pending' ? `
-  <span class="badge badge-warning">
-    ${isOwner ? 'Pending for approval' : 'Under Moderation'}
-  </span>
-` : ''}
+            ${review.status === 'pending' ? `
+              <span class="badge badge-warning">
+                ${isOwner ? 'Pending for approval' : 'Under Moderation'}
+              </span>
+            ` : ''}
             ${review.status === 'flagged' ? '<span class="badge bg-danger">Flagged</span>' : ''}
           </p>
           <p class="review-comment">${this.escapeHtml(review.comment)}</p>
@@ -293,19 +320,18 @@ async deleteAuthor() {
 
         <div id="review-edit-${review.id}" style="display: none;">
           <form data-action="submit->author-show#updateReview" data-review-id="${review.id}">
-             <select name="review[rating]" class="form-control mb-2">
-               ${[5,4,3,2,1].map(n => `<option value="${n}" ${n == review.rating ? 'selected' : ''}>${n} Stars</option>`).join('')}
-             </select>
-             <textarea name="review[comment]" class="form-control mb-2">${this.escapeHtml(review.comment)}</textarea>
-             <button type="submit" class="btn btn-success btn-sm">Save</button>
-             <button type="button" class="btn btn-secondary btn-sm" data-action="click->author-show#toggleEdit" data-review-id="${review.id}">Cancel</button>
+            <select name="review[rating]" class="form-control mb-2">
+              ${[5,4,3,2,1].map(n => `<option value="${n}" ${n == review.rating ? 'selected' : ''}>${n} Stars</option>`).join('')}
+            </select>
+            <textarea name="review[comment]" class="form-control mb-2">${this.escapeHtml(review.comment)}</textarea>
+            <button type="submit" class="btn btn-success btn-sm">Save</button>
+            <button type="button" class="btn btn-secondary btn-sm" data-action="click->author-show#toggleEdit" data-review-id="${review.id}">Cancel</button>
           </form>
         </div>
       </div>
     `
   }
 
-  // --- HELPERS ---
   isMemberSignedIn() {
     return document.body.dataset.memberSignedIn === 'true'
   }
@@ -327,14 +353,5 @@ async deleteAuthor() {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'Accept': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

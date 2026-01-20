@@ -1,4 +1,6 @@
+// app/javascript/controllers/reservations_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["table"]
@@ -10,8 +12,13 @@ export default class extends Controller {
   async loadReservations() {
     try {
       const response = await fetch('/api/v1/reservations', {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       // If the server crashes (500), response.json() fails with SyntaxError
       if (!response.ok) throw new Error("Server returned an error")
@@ -31,8 +38,13 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/reservations/${reservationId}/cancel`, {
         method: 'PATCH',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       const data = await response.json()
       
@@ -119,13 +131,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

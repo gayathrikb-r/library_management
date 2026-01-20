@@ -1,5 +1,5 @@
-// app/javascript/controllers/member_profile_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["profile", "activity"]
@@ -12,12 +12,17 @@ export default class extends Controller {
   async loadMemberProfile() {
     try {
       const response = await fetch(`/api/v1/members/${this.memberIdValue}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const member = await response.json()
       this.renderProfile(member)
       
-      // Load activity stats if librarian
       if (this.isLibrarianSignedIn()) {
         await this.loadActivityStats()
       }
@@ -29,8 +34,14 @@ export default class extends Controller {
   async loadActivityStats() {
     try {
       const response = await fetch(`/api/v1/members/${this.memberIdValue}/activity`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const stats = await response.json()
       this.renderActivity(stats)
     } catch (error) {
@@ -95,12 +106,5 @@ export default class extends Controller {
     div.textContent = text
     return div.innerHTML
   }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
-  }
 }
+

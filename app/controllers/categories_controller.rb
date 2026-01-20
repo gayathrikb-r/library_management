@@ -1,7 +1,7 @@
 class CategoriesController < ApplicationController
   # Only librarians can create/update/destroy categories
-  before_action :authenticate_librarian!, except: [:index, :show]
-  before_action :set_category, only: [:show, :edit, :update, :destroy]
+  before_action :authenticate_librarian!, except: [ :index, :show ]
+  before_action :set_category, only: [ :show, :edit, :update, :destroy ]
 
   # GET /categories
   def index
@@ -24,7 +24,7 @@ class CategoriesController < ApplicationController
     if @category.save
       redirect_to categories_path, notice: "Category created successfully"
     else
-      render :new, status: :unprocessable_entity
+      render :new, status: :unprocessable_content
     end
   end
 
@@ -37,7 +37,7 @@ class CategoriesController < ApplicationController
     if @category.update(category_params)
       redirect_to categories_path, notice: "Category updated successfully"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 

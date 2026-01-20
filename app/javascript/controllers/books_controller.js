@@ -1,4 +1,5 @@
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["grid", "search", "category", "available", "pagination"]
@@ -22,16 +23,21 @@ export default class extends Controller {
 
     try {
       const response = await fetch(`/api/v1/books?${params}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+    
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
-      //  Check if 'data' is the array itself, or if the array is nested inside 'data.books'
       const booksArray = Array.isArray(data) ? data : (data.books || [])
       
       this.renderBooks(booksArray)
       
-      // Render pagination if meta exists
       if (data.meta) {
         this.renderPagination(data.meta)
       }
@@ -66,10 +72,9 @@ export default class extends Controller {
   }
 
   renderBooks(books) {
-
     if (!books || books.length === 0) {
       this.gridTarget.innerHTML = `
-        <div class="card ">
+        <div class="card">
           <p>No books found.</p>
           <p class="muted">Try adjusting your search or filters.</p>
         </div>
@@ -91,16 +96,12 @@ export default class extends Controller {
     }
 
     let pages = []
-    
-    //  show first page
     pages.push(1)
     
-    // Show pages around current page
     for (let i = Math.max(2, current_page - 1); i <= Math.min(total_pages - 1, current_page + 1); i++) {
       if (!pages.includes(i)) pages.push(i)
     }
     
-    // Always show last page
     if (!pages.includes(total_pages)) pages.push(total_pages)
 
     this.paginationTarget.innerHTML = `
@@ -112,7 +113,6 @@ export default class extends Controller {
         ` : ''}
         
         ${pages.map((page, index) => {
-          // Add ... if there's a gap
           const prevPage = pages[index - 1]
           const ellipsis = prevPage && page - prevPage > 1 ? '<span class="pagination-ellipsis">...</span>' : ''
           
@@ -172,18 +172,9 @@ export default class extends Controller {
   }
 
   escapeHtml(text) {
-    //  safety check for null/undefined
     if (!text) return ""
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

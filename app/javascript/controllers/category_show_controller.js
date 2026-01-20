@@ -1,5 +1,5 @@
-// app/javascript/controllers/category_show_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["categoryDetails", "booksList"]
@@ -12,8 +12,14 @@ export default class extends Controller {
   async loadCategoryDetails() {
     try {
       const response = await fetch(`/api/v1/categories/${this.categoryIdValue}`, {
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
+
       const data = await response.json()
       
       this.renderCategory(data.category)
@@ -29,8 +35,13 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/categories/${this.categoryIdValue}`, {
         method: 'DELETE',
-        headers: this.headers()
+        headers: AuthHelper.getAuthHeaders()
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
       
       if (response.ok || response.status === 204) {
         alert('Category deleted')
@@ -95,13 +106,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

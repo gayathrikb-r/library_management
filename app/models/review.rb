@@ -7,7 +7,7 @@ class Review < ApplicationRecord
   def self.ransackable_attributes(auth_object = nil)
     ["comment", "created_at", "id", "id_value", "rating", "reviewable_id", "reviewable_type", "reviewer_id", "reviewer_type", "status", "updated_at"]
   end
-  enum status: { pending: 0, approved: 1, flagged: 2 }
+enum :status, { pending: 0, approved: 1, flagged: 2 }
 
   validates :rating, inclusion: { in: 1..5 }
   validates :comment, length: { minimum: 10, maximum: 1000 }

@@ -1,4 +1,4 @@
-# app/controllers/member/dashboard_controller.rb
+
 class Member::DashboardController < ApplicationController
   before_action :authenticate_member!
 

@@ -14,7 +14,9 @@ class Member < ApplicationRecord
            dependent: :destroy
 
   # Associations
-  has_many :borrowings, dependent: :restrict_with_error
+has_many :borrowings, dependent: :destroy
+
+  
   has_many :reservations, dependent: :destroy
   has_many :reviews, as: :reviewer, dependent: :destroy
 
@@ -35,19 +37,20 @@ class Member < ApplicationRecord
   # Callbacks
   before_validation :normalize_phone
   after_commit :send_welcome_email, on: :create
-  before_destroy :check_active_borrowings
+  before_destroy :check_active_borrowings, prepend: true
   after_update :revoke_all_oauth_tokens!, if: :saved_change_to_encrypted_password?
 
 
   # Scopes / Methods
   def has_overdue_books?
-    borrowings.borrowed.where("due_date < ?", Date.today).exists?
+    borrowings.overdue.exists?
   end
 
   def active_borrowings_count
     borrowings.borrowed.count
   end
 
+  
   # Ransack support
   def self.ransackable_attributes(auth_object = nil)
     %w[name email phone birth_date bio created_at updated_at]
@@ -72,8 +75,8 @@ class Member < ApplicationRecord
     Rails.logger.info "Welcome email sent to #{email}"
   end
 
-  def check_active_borrowings
-    if borrowings.borrowed.exists?
+ def check_active_borrowings
+    if borrowings.where(status: [:borrowed, :overdue]).exists?
       errors.add(:base, "Cannot delete member with active borrowings")
       throw :abort
     end

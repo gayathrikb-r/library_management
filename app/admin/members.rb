@@ -50,14 +50,15 @@ ActiveAdmin.register Member do
       f.input :birth_date, as: :datepicker
       f.input :bio
 
-      f.input :favorite_author,
-              as: :select,
-              collection: -> { Author.order(:name) }
+f.input :favorite_author,
+        as: :select,
+        collection: Author.order(:name)
 
-      f.input :liked_categories,
-              as: :select,
-              collection: -> { Category.order(:name) },
-              input_html: { multiple: true }
+f.input :liked_categories,
+        as: :select,
+        collection: Category.order(:name),
+        input_html: { multiple: true }
+
     end
 
     f.inputs "Password" do

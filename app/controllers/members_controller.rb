@@ -7,14 +7,13 @@ class MembersController < ApplicationController
   end
 
   def edit
-   
   end
 
   def update
     if @member.update(member_params)
       redirect_to member_path(@member), notice: "Profile updated successfully"
     else
-      render :edit, status: :unprocessable_entity
+      render :edit, status: :unprocessable_content
     end
   end
 
@@ -26,10 +25,8 @@ class MembersController < ApplicationController
   end
 
   def set_member
-
   @member = Member.find_by(id: params[:id])
   redirect_to root_path, alert: "Member not found" unless @member
-
   end
 
   def authorize_member_access!

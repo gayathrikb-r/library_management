@@ -1,5 +1,5 @@
-// app/javascript/controllers/book_form_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["form", "errors"]
@@ -20,7 +20,6 @@ export default class extends Controller {
       category_ids: formData.getAll('book[category_ids][]').filter(id => id)
     }
 
-    // Handle new authors
     const newAuthors = formData.get('book[new_author_name]')
     if (newAuthors) {
       bookData.new_author_names = newAuthors.split(',').map(name => name.trim()).filter(Boolean)
@@ -34,15 +33,19 @@ export default class extends Controller {
     const url = this.isEditValue 
       ? `/api/v1/books/${this.bookIdValue}`
       : '/api/v1/books'
-    
     const method = this.isEditValue ? 'PATCH' : 'POST'
 
     try {
       const response = await fetch(url, {
         method: method,
-        headers: this.headers(),
+        headers: AuthHelper.getAuthHeaders(),
         body: JSON.stringify({ book: bookData })
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
 
       if (response.ok) {
         const data = await response.json()
@@ -74,13 +77,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }

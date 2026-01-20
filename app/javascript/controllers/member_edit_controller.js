@@ -1,5 +1,5 @@
-// app/javascript/controllers/member_edit_controller.js
 import { Controller } from "@hotwired/stimulus"
+import AuthHelper from "../services/auth_helper"
 
 export default class extends Controller {
   static targets = ["form", "errors"]
@@ -19,9 +19,14 @@ export default class extends Controller {
     try {
       const response = await fetch(`/api/v1/members/${this.memberIdValue}`, {
         method: 'PATCH',
-        headers: this.headers(),
+        headers: AuthHelper.getAuthHeaders(),
         body: JSON.stringify({ member: memberData })
       })
+
+      if (response.status === 401) {
+        AuthHelper.handleUnauthorized()
+        return
+      }
 
       const data = await response.json()
 
@@ -54,13 +59,5 @@ export default class extends Controller {
     const div = document.createElement('div')
     div.textContent = text
     return div.innerHTML
-  }
-
-  headers() {
-    const token = document.querySelector('meta[name="csrf-token"]')?.content
-    return {
-      'Content-Type': 'application/json',
-      'X-CSRF-Token': token
-    }
   }
 }
