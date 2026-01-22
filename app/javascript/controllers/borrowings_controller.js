@@ -1,3 +1,4 @@
+// app/javascript/controllers/borrowings_controller.js
 import { Controller } from "@hotwired/stimulus"
 import AuthHelper from "../services/auth_helper"
 
@@ -7,6 +8,9 @@ export default class extends Controller {
     filter: String,
     memberId: String
   }
+  
+  // Define fine amount constant here
+  static FINE_PER_DAY = 5;
 
   connect() {
     this.loadBorrowings()
@@ -54,8 +58,17 @@ export default class extends Controller {
   }
 
   async returnBook(event) {
-    const borrowingId = event.currentTarget.dataset.borrowingId
-    if (!confirm('Mark this book as returned?')) return
+    const button = event.currentTarget
+    const borrowingId = button.dataset.borrowingId
+    
+    // 1. Get Due Date from the button's data attribute
+    const dueDateStr = button.dataset.dueDate
+    
+    // 2. Client-side Check: Calculate potential fine and ask for confirmation
+    const confirmation = this.getConfirmationMessage(dueDateStr)
+
+    // 3. Native OK/Cancel Dialog
+    if (!confirm(confirmation)) return
 
     try {
       const response = await fetch(`/api/v1/borrowings/${borrowingId}/return_book`, {
@@ -71,7 +84,8 @@ export default class extends Controller {
       const data = await response.json()
       
       if (response.ok) {
-        alert(data.message)
+        // 4. Show success receipt from server response
+        this.showReceipt(data)
         this.loadBorrowings()
       } else {
         alert(data.error || 'Error returning book')
@@ -79,6 +93,46 @@ export default class extends Controller {
     } catch (error) {
       console.error('Error:', error)
       alert('Failed to return book')
+    }
+  }
+
+  // Helper to generate the text for the OK/Cancel box
+  getConfirmationMessage(dueDateStr) {
+    const today = new Date()
+    today.setHours(0,0,0,0) // Reset time to midnight to ensure accurate day diff
+    
+    const dueDate = new Date(dueDateStr)
+    // Fix parsing if needed, usually string 'YYYY-MM-DD' parses fine in JS
+    
+    // Calculate difference in milliseconds then convert to days
+    const diffTime = today - dueDate
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays > 0) {
+      const fine = diffDays * this.constructor.FINE_PER_DAY
+      return `⚠️ OVERDUE WARNING ⚠️\n\n` + 
+             `This book is ${diffDays} days overdue.\n` +
+             `Estimated Fine: ${fine} INR\n\n` +
+             `Click OK to collect fine and return.\n` + 
+             `Click Cancel to go back.`
+    }
+    
+    return "Mark this book as returned?"
+  }
+
+  // Helper to show the final server response
+  showReceipt(data) {
+    if (data.alert) {
+      const { title, message, amount, currency, days_overdue } = data.alert
+      alert(
+        `✅ RETURN SUCCESSFUL\n\n` +
+        `----------------------------------\n` +
+        `📅 Days Overdue:  ${days_overdue}\n` +
+        `💰 FINE COLLECTED: ${currency} ${amount}\n` +
+        `----------------------------------`
+      )
+    } else {
+      alert(data.message)
     }
   }
 
@@ -118,10 +172,12 @@ export default class extends Controller {
       ? this.formatDate(borrowing.returned_date)
       : "Not returned"
 
+    // CHANGED: Added data-due-date attribute so returnBook can read it
     const returnButton = isLibrarian && !borrowing.returned_date
       ? `<button class="btn btn-success btn-sm" 
                  data-action="click->borrowings#returnBook"
-                 data-borrowing-id="${borrowing.id}">
+                 data-borrowing-id="${borrowing.id}"
+                 data-due-date="${borrowing.due_date}">
            Return
          </button>`
       : ''

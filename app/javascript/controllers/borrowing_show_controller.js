@@ -5,6 +5,9 @@ import AuthHelper from "../services/auth_helper"
 export default class extends Controller {
   static targets = ["details"]
   static values = { borrowingId: Number }
+  
+
+  static FINE_PER_DAY = 5;
 
   connect() {
     this.loadBorrowingDetails()
@@ -28,8 +31,16 @@ export default class extends Controller {
     }
   }
 
-  async returnBook() {
-    if (!confirm('Confirm return?')) return
+  async returnBook(event) {
+
+    const button = event.currentTarget
+    const dueDateStr = button.dataset.dueDate
+
+
+    const confirmation = this.getConfirmationMessage(dueDateStr)
+
+
+    if (!confirm(confirmation)) return
 
     try {
       const response = await fetch(`/api/v1/borrowings/${this.borrowingIdValue}/return_book`, {
@@ -45,7 +56,7 @@ export default class extends Controller {
       const data = await response.json()
       
       if (response.ok) {
-        alert(data.message)
+        this.handleReturnResponse(data) 
         this.loadBorrowingDetails()
       } else {
         alert(data.error || 'Error returning book')
@@ -56,22 +67,63 @@ export default class extends Controller {
     }
   }
 
+
+  getConfirmationMessage(dueDateStr) {
+    const today = new Date()
+    today.setHours(0,0,0,0) 
+    
+    const dueDate = new Date(dueDateStr)
+    
+
+    const diffTime = today - dueDate
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    
+    if (diffDays > 0) {
+      const fine = diffDays * this.constructor.FINE_PER_DAY
+      return `⚠️ OVERDUE WARNING ⚠️\n\n` + 
+             `This book is ${diffDays} days overdue.\n` +
+             `Estimated Fine: ${fine} INR\n\n` +
+             `Click OK to collect fine and return.\n` + 
+             `Click Cancel to go back.`
+    }
+    
+    return "Mark this book as returned?"
+  }
+
+  handleReturnResponse(data) {
+    if (data.alert) {
+      const { title, message, amount, currency, days_overdue } = data.alert
+      
+      alert(
+        `✅ RETURN SUCCESSFUL\n\n` +
+        `----------------------------------\n` +
+        `📅 Days Overdue:  ${days_overdue}\n` +
+        `💰 FINE COLLECTED: ${currency} ${amount}\n` +
+        `----------------------------------`
+      )
+    } else {
+      alert(data.message)
+    }
+  }
+
   renderBorrowing(borrowing) {
     const statusBadge = this.getStatusBadge(borrowing)
     const borrowedDate = this.formatDateLong(borrowing.borrowed_date)
     const dueDate = this.formatDateLong(borrowing.due_date)
     
-    // Handle null returned_date gracefully
+
     const returnDate = borrowing.returned_date 
       ? this.formatDateLong(borrowing.returned_date)
       : "Not returned yet"
 
-    // FIX: Strictly check if a returned_date exists to hide the button
+    
     const isBookReturned = borrowing.returned_date != null; 
 
-    // Only show button if librarian is signed in AND book is NOT returned
+ 
     const returnButton = this.isLibrarianSignedIn() && !isBookReturned
-      ? `<button class="btn btn-success" data-action="click->borrowing-show#returnBook">
+      ? `<button class="btn btn-success" 
+                 data-action="click->borrowing-show#returnBook"
+                 data-due-date="${borrowing.due_date}">
            Mark as Returned
          </button>`
       : ''
@@ -101,12 +153,11 @@ export default class extends Controller {
       return '<span class="badge badge-success">Returned</span>'
     }
     
-    // PRIORITY 2: If active and past due date
+
     if (borrowing.status === 'overdue' || borrowing.days_overdue > 0) {
       return `<span class="badge badge-danger">Overdue by ${borrowing.days_overdue} days</span>`
     }
     
-    // PRIORITY 3: Active
     return '<span class="badge badge-info">Active</span>'
   }
 

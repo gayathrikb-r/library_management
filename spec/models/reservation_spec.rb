@@ -3,6 +3,7 @@ require 'rails_helper'
 RSpec.describe Reservation, type: :model do
   # Pre-create member/book to control when logs happen and ensure valid associations
   let(:member) { create(:member) } 
+  # Set available_copies to 0 so reservations are valid by default
   let(:book) { create(:book, available_copies: 0) }
 
   subject { build(:reservation, member: member, book: book) }
@@ -16,8 +17,6 @@ RSpec.describe Reservation, type: :model do
     it { should validate_presence_of(:book_id) }
     it { should validate_presence_of(:member_id) }
 
-    # Because set_defaults populates these on :create, we test presence on :update 
-    # to ensure the validation line is covered without callback interference.
     context 'on update' do
       subject { create(:reservation, member: member, book: book, skip_availability_check: true) }
       it { should validate_presence_of(:reservation_date).on(:update) }
@@ -35,8 +34,8 @@ RSpec.describe Reservation, type: :model do
         end
 
         it 'is valid if book is unavailable' do
-          unavailable_book = create(:book, available_copies: 0)
-          reservation = build(:reservation, book: unavailable_book, member: member)
+          # Use the default 'book' which has 0 copies
+          reservation = build(:reservation, book: book, member: member)
           expect(reservation).to be_valid
         end
 
@@ -73,11 +72,12 @@ RSpec.describe Reservation, type: :model do
 
     describe 'send_confirmation' do
       it 'logs confirmation email on create' do
-        # We create a new member inside this test to trigger the welcome log first, 
-        # then we expect the reservation log.
         new_member = create(:member) 
         
+        # FIX: Allow other info logs (like Mailer delivery logs) to happen without failing the test
+        allow(Rails.logger).to receive(:info) 
         expect(Rails.logger).to receive(:info).with(/Reservation confirmation sent to/)
+        
         create(:reservation, member: new_member, book: book, skip_availability_check: true)
       end
     end
@@ -85,13 +85,18 @@ RSpec.describe Reservation, type: :model do
 
   describe 'instance methods' do
     describe '#fulfill!' do
-      # We use skip_availability_check to create a pending reservation regardless of book state
       let!(:reservation) { create(:reservation, book: book, member: member, status: :pending, skip_availability_check: true) }
 
       context 'when successful' do
-        before { book.update(available_copies: 1) } # Make book available now
+        before do 
+          book.update(available_copies: 1)
+          # FIX: Stub mailer to prevent side-effects/logging during this unit test
+          allow(ReservationMailer).to receive_message_chain(:book_available_notification, :deliver_later)
+        end
 
         it 'creates borrowing, updates status, and logs info' do
+          # FIX: Allow generic info logs so the specific expectation below doesn't get confused by unrelated noise
+          allow(Rails.logger).to receive(:info)
           expect(Rails.logger).to receive(:info).with(/Reservation .* fulfilled/)
 
           expect { reservation.fulfill! }.to change(Borrowing, :count).by(1)
@@ -116,12 +121,17 @@ RSpec.describe Reservation, type: :model do
           end
         end
       end
-context 'when borrowing creation fails' do
+
+      context 'when borrowing creation fails' do
         before { book.update(available_copies: 1) }
 
         it 'rescues error and returns false' do
+          # Stub the mailer here too just in case
+          allow(ReservationMailer).to receive_message_chain(:book_available_notification, :deliver_later)
+          
           borrowings_proxy = double("BorrowingsProxy")
           
+          # Stub the association on the specific instance
           allow(reservation.book).to receive(:borrowings).and_return(borrowings_proxy)
           
           allow(borrowings_proxy).to receive(:create!)
@@ -131,6 +141,7 @@ context 'when borrowing creation fails' do
           expect(reservation.errors[:base]).not_to be_empty
         end
       end
+
       context 'when not pending' do
         it 'returns false' do
           reservation.update(status: :cancelled)
@@ -143,6 +154,8 @@ context 'when borrowing creation fails' do
       let!(:reservation) { create(:reservation, book: book, member: member, status: :pending, skip_availability_check: true) }
 
       it 'cancels reservation and logs' do
+        # FIX: Allow generic logs
+        allow(Rails.logger).to receive(:info)
         expect(Rails.logger).to receive(:info).with(/Reservation #{reservation.id} cancelled/)
         
         expect(reservation.cancel!).to be true
@@ -154,7 +167,7 @@ context 'when borrowing creation fails' do
         expect(reservation.cancel!).to be false
       end
 
-       context 'when update fails' do
+      context 'when update fails' do
         it 'rescues RecordInvalid and returns false' do
           allow(reservation).to receive(:update!).and_raise(ActiveRecord::RecordInvalid.new(reservation))
           

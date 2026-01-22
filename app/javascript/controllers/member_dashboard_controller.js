@@ -35,7 +35,7 @@ export default class extends Controller {
     const borrowingId = event.currentTarget.dataset.borrowingId
     if (!confirm('Mark this book as returned?')) return
 
-    try {
+  try {
       const response = await fetch(`/api/v1/borrowings/${borrowingId}/return_book`, {
         method: 'PATCH',
         headers: AuthHelper.getAuthHeaders()
@@ -49,7 +49,7 @@ export default class extends Controller {
       const data = await response.json()
       
       if (response.ok) {
-        alert(data.message)
+        this.handleReturnResponse(data)
         this.loadDashboard()
       } else {
         alert(data.error || 'Error returning book')
@@ -57,6 +57,20 @@ export default class extends Controller {
     } catch (error) {
       console.error('Error:', error)
       alert('Failed to return book')
+    }
+  }
+  handleReturnResponse(data) {
+    if (data.alert) {
+      const { title, amount, currency, days_overdue } = data.alert
+      alert(
+        `⚠️ ${title} ⚠️\n\n` +
+        `You have returned this book late.\n\n` +
+        `Days Overdue: ${days_overdue}\n` +
+        `Fine Due: ${currency} ${amount}\n\n` +
+        `Please pay at the counter.`
+      )
+    } else {
+      alert(data.message)
     }
   }
 

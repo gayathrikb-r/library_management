@@ -159,7 +159,9 @@ Rails.application.routes.draw do
             patch :approve
           end
         end
-      end
+    
+    end
+    get 'system_stats', to: 'client_actions#system_stats'
     end
   end
 

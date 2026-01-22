@@ -1,25 +1,9 @@
 class Member < ApplicationRecord
   # Devise modules
-  devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
-
-  has_many :oauth_access_grants,
-           as: :resource_owner,
-           class_name: 'Doorkeeper::AccessGrant',
-           dependent: :destroy
-
-  has_many :oauth_access_tokens,
-           as: :resource_owner,
-           class_name: 'Doorkeeper::AccessToken',
-           dependent: :destroy
-
-  # Associations
-has_many :borrowings, dependent: :destroy
-
-  
+   include Authenticatable
+   has_many :borrowings, dependent: :destroy
   has_many :reservations, dependent: :destroy
-  has_many :reviews, as: :reviewer, dependent: :destroy
-
+  
   has_many :borrowed_books, through: :borrowings, source: :book
   has_many :reserved_books, through: :reservations, source: :book
 
@@ -27,20 +11,11 @@ has_many :borrowings, dependent: :destroy
   has_many :liked_categories, through: :member_categories, source: :category
 
   belongs_to :favorite_author, class_name: "Author", optional: true
+  
 
-  # Validations
-  validates :name, presence: true
-  validates :phone,
-            format: { with: /\A\d{10}\z/, message: "must be 10 digits" },
-            allow_blank: true
-
-  # Callbacks
-  before_validation :normalize_phone
   after_commit :send_welcome_email, on: :create
   before_destroy :check_active_borrowings, prepend: true
-  after_update :revoke_all_oauth_tokens!, if: :saved_change_to_encrypted_password?
-
-
+  
   # Scopes / Methods
   def has_overdue_books?
     borrowings.overdue.exists?

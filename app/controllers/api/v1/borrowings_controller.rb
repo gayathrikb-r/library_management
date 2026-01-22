@@ -44,20 +44,34 @@ module Api
       end
 
       def return_book
-        if @borrowing.status == "returned"
+        if @borrowing.returned?
           return render json: { error: "Book already returned" }, status: :unprocessable_content
         end
-
+        fine_to_pay = @borrowing.calculate_fine
+        days_late = @borrowing.days_overdue
         if @borrowing.mark_as_returned!
-          render json: {
+           response_data = {
             message: "Book returned successfully",
             borrowing: @borrowing.reload
-          }, status: :ok
+          }
+
+          if fine_to_pay > 0
+            response_data[:alert] = {
+              type: "overdue_fine",
+              title: "💰 Collect Fine",
+              message: "This book is returned late. Please collect the fine from the member.",
+              amount: fine_to_pay,
+              currency: "INR",
+              days_overdue: days_late
+            }
+          end
+
+          render json: response_data, status: :ok
         else
           render json: { error: "Could not return book" }, status: :unprocessable_content
         end
       end
-
+    
       private
 
       def set_borrowing

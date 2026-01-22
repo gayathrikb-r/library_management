@@ -69,7 +69,7 @@ end
 
 def destroy
   if @author.destroy
-    # 204 No Content is the standard success response for DELETE
+    # 204 No Content
     head :no_content
   else
     render json: { errors: @author.errors.full_messages }, status: :unprocessable_content
